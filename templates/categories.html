@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Categories | Home Inventory Manager</title>
+</head>
+
+<body>
+
+    <h1>Categories</h1>
+
+    <ul>
+        {% for category in categories %}
+        <li>{{ category.name }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if user.role == "Administrator" %}
+    <form method="POST" action="{{ url_for('add_category') }}">
+        <label for="name">New category</label>
+        <input type="text" id="name" name="name" required>
+        <button type="submit">Add Category</button>
+    </form>
+    {% endif %}
+
+</body>
+
+</html>

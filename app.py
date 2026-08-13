@@ -63,7 +63,6 @@ def logout():
 def dashboard():
     if "user_id" not in session:
         return redirect(url_for("login"))
-
     return "Welcome to the dashboard"
 
 @app.route("/admin")
@@ -75,3 +74,33 @@ def admin():
     if user.role != ROLE_ADMIN:
         abort(403)
     return "Administrator access granted"
+
+@app.route("/categories")
+def categories():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+    
+    category_list = db.session.execute(
+    db.select(Category).order_by(Category.name)
+    ).scalars().all()
+    return render_template("categories.html", categories=category_list,user=user)
+
+@app.route("/categories/add", methods=["POST"])
+def add_category():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+    if user.role != ROLE_ADMIN:
+        abort(403)
+    name = request.form["name"].strip()
+    if name:
+        existing_category = db.session.execute(
+            db.select(Category).where(Category.name == name)
+        ).scalar_one_or_none()
+
+        if existing_category is None:
+            category = Category(name=name)
+            db.session.add(category)
+            db.session.commit()
+    return redirect(url_for("categories"))
