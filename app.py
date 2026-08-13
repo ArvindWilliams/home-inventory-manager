@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, abort
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+
+ROLE_ADMIN = "Administrator"
+ROLE_USER = "User"
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-secret-key"
@@ -12,6 +15,13 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False)
+
+
+def get_current_user():
+    user_id = session.get("user_id")
+    if user_id is None:
+        return None
+    return db.session.get(User, user_id)
 
 @app.route("/")
 def home():
@@ -51,3 +61,13 @@ def dashboard():
         return redirect(url_for("login"))
 
     return "Welcome to the dashboard"
+
+@app.route("/admin")
+def admin():
+    user = get_current_user()
+    if user is None:
+        return redirect(url_for("login"))
+    # Restrict this route to Administrator accounts
+    if user.role != ROLE_ADMIN:
+        abort(403)
+    return "Administrator access granted"
