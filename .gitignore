@@ -4,3 +4,4 @@ __pycache__/
 .env
 instance/
 gitbash_history.txt
+gitbash_history_*.txt
