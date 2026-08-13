@@ -67,6 +67,7 @@ def admin():
     user = get_current_user()
     if user is None:
         return redirect(url_for("login"))
+    # Restrict this route to Administrator accounts
     if user.role != ROLE_ADMIN:
         abort(403)
     return "Administrator access granted"
