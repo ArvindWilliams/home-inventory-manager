@@ -20,12 +20,25 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
 
+class Asset(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+
+    category_id = db.Column(
+        db.Integer,
+        db.ForeignKey("category.id"),
+        nullable=False
+    )
+
+    category = db.relationship("Category")
+
 
 def get_current_user():
     user_id = session.get("user_id")
     if user_id is None:
         return None
     return db.session.get(User, user_id)
+
 
 @app.route("/")
 def home():
