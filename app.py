@@ -104,3 +104,54 @@ def add_category():
             db.session.add(category)
             db.session.commit()
     return redirect(url_for("categories"))
+
+@app.route("/categories/<int:category_id>/update", methods=["POST"])
+def update_category(category_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    if user.role != ROLE_ADMIN:
+        abort(403)
+
+    category = db.session.get(Category, category_id)
+
+    if category is None:
+        abort(404)
+
+    name = request.form["name"].strip()
+
+    if name:
+        existing_category = db.session.execute(
+            db.select(Category).where(
+                Category.name == name,
+                Category.id != category_id
+            )
+        ).scalar_one_or_none()
+
+        if existing_category is None:
+            category.name = name
+            db.session.commit()
+
+    return redirect(url_for("categories"))
+
+@app.route("/categories/<int:category_id>/delete", methods=["POST"])
+def delete_category(category_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    if user.role != ROLE_ADMIN:
+        abort(403)
+
+    category = db.session.get(Category, category_id)
+
+    if category is None:
+        abort(404)
+
+    db.session.delete(category)
+    db.session.commit()
+
+    return redirect(url_for("categories"))

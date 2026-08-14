@@ -10,9 +10,27 @@
 
     <h1>Categories</h1>
 
+
+
     <ul>
         {% for category in categories %}
-        <li>{{ category.name }}</li>
+        <li>
+            {{ category.name }}
+
+            {% if user.role == "Administrator" %}
+            <form method="POST" action="{{ url_for('update_category', category_id=category.id) }}"
+                style="display:inline;">
+                <input type="text" name="name" value="{{ category.name }}" required>
+                <button type="submit">Update</button>
+            </form>
+
+            <form method="POST" action="{{ url_for('delete_category', category_id=category.id) }}"
+                style="display:inline;">
+                <button type="submit">Delete</button>
+            </form>
+            {% endif %}
+
+        </li>
         {% endfor %}
     </ul>
 
