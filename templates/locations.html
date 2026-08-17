@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Locations | Home Inventory Manager</title>
+</head>
+
+<body>
+
+    <h1>Locations</h1>
+
+    <ul>
+        {% for location in locations %}
+        <li>
+            {{ location.name }}
+
+            {% if user.role == "Administrator" %}
+            <form method="POST" action="{{ url_for('update_location', location_id=location.id) }}"
+                style="display:inline;">
+                <input type="text" name="name" value="{{ location.name }}" required>
+                <button type="submit">Update</button>
+            </form>
+
+            <form method="POST" action="{{ url_for('delete_location', location_id=location.id) }}"
+                style="display:inline;">
+                <button type="submit">Delete</button>
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% if user.role == "Administrator" %}
+    <form method="POST" action="{{ url_for('add_location') }}">
+        <label for="name">New location</label>
+        <input type="text" id="name" name="name" required>
+        <button type="submit">Add Location</button>
+    </form>
+    {% endif %}
+
+</body>
+
+</html>
