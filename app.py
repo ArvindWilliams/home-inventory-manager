@@ -20,18 +20,6 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
 
-class Asset(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-
-    category_id = db.Column(
-        db.Integer,
-        db.ForeignKey("category.id"),
-        nullable=False
-    )
-
-    category = db.relationship("Category")
-
 
 def get_current_user():
     user_id = session.get("user_id")
@@ -168,3 +156,134 @@ def delete_category(category_id):
     db.session.commit()
 
     return redirect(url_for("categories"))
+
+class Location(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+
+class Asset(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255))
+    status = db.Column(db.String(20), nullable=False, default="Active")
+
+    category_id = db.Column(
+        db.Integer,
+        db.ForeignKey("category.id"),
+        nullable=False
+    )
+    category = db.relationship("Category")
+
+    location_id = db.Column(
+        db.Integer,
+        db.ForeignKey("location.id"),
+        nullable=False
+    )
+    location = db.relationship("Location")
+
+
+@app.route("/assets")
+def assets():
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset_list = db.session.execute(
+        db.select(Asset).order_by(Asset.name)
+    ).scalars().all()
+
+    categories = db.session.execute(
+        db.select(Category).order_by(Category.name)
+    ).scalars().all()
+
+    locations = db.session.execute(
+        db.select(Location).order_by(Location.name)
+    ).scalars().all()
+
+    return render_template(
+        "assets.html",
+        assets=asset_list,
+        categories=categories,
+        locations=locations,
+        user=user
+    )
+
+
+@app.route("/assets/add", methods=["POST"])
+def add_asset():
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    name = request.form["name"].strip()
+    description = request.form["description"].strip()
+    category_id = request.form["category_id"]
+    location_id = request.form["location_id"]
+
+    category = db.session.get(Category, int(category_id))
+    location = db.session.get(Location, int(location_id))
+
+    if name and category is not None and location is not None:
+        asset = Asset(
+            name=name,
+            description=description,
+            status="Active",
+            category_id=int(category_id),
+            location_id=int(location_id)
+        )
+
+        db.session.add(asset)
+        db.session.commit()
+
+
+        
+
+    return redirect(url_for("assets"))
+
+@app.route("/assets/<int:asset_id>/update", methods=["POST"])
+def update_asset(asset_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset = db.session.get(Asset, asset_id)
+
+    if asset is None:
+        abort(404)
+
+    name = request.form["name"].strip()
+    description = request.form["description"].strip()
+    category_id = request.form["category_id"]
+    location_id = request.form["location_id"]
+
+    category = db.session.get(Category, int(category_id))
+    location = db.session.get(Location, int(location_id))
+
+    if name and category is not None and location is not None:
+        asset.name = name
+        asset.description = description
+        asset.category_id = category.id
+        asset.location_id = location.id
+
+        db.session.commit()
+    return redirect(url_for("assets"))
+
+@app.route("/assets/<int:asset_id>/delete", methods=["POST"])
+def delete_asset(asset_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset = db.session.get(Asset, asset_id)
+
+    if asset is None:
+        abort(404)
+
+    db.session.delete(asset)
+    db.session.commit()
+
+    return redirect(url_for("assets"))
