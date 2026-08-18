@@ -222,7 +222,10 @@ def add_asset():
     category_id = request.form["category_id"]
     location_id = request.form["location_id"]
 
-    if name and category_id and location_id:
+    category = db.session.get(Category, int(category_id))
+    location = db.session.get(Location, int(location_id))
+
+    if name and category is not None and location is not None:
         asset = Asset(
             name=name,
             description=description,
@@ -233,6 +236,9 @@ def add_asset():
 
         db.session.add(asset)
         db.session.commit()
+
+
+        
 
     return redirect(url_for("assets"))
 
@@ -248,15 +254,22 @@ def update_asset(asset_id):
     if asset is None:
         abort(404)
 
-    asset.name = request.form["name"].strip()
-    asset.description = request.form["description"].strip()
-    asset.category_id = int(request.form["category_id"])
-    asset.location_id = int(request.form["location_id"])
+    name = request.form["name"].strip()
+    description = request.form["description"].strip()
+    category_id = request.form["category_id"]
+    location_id = request.form["location_id"]
 
-    db.session.commit()
+    category = db.session.get(Category, int(category_id))
+    location = db.session.get(Location, int(location_id))
 
+    if name and category is not None and location is not None:
+        asset.name = name
+        asset.description = description
+        asset.category_id = category.id
+        asset.location_id = location.id
+
+        db.session.commit()
     return redirect(url_for("assets"))
-
 
 @app.route("/assets/<int:asset_id>/delete", methods=["POST"])
 def delete_asset(asset_id):
