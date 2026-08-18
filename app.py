@@ -287,3 +287,24 @@ def delete_asset(asset_id):
     db.session.commit()
 
     return redirect(url_for("assets"))
+
+@app.route("/assets/<int:asset_id>/move", methods=["POST"])
+def move_asset(asset_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset = db.session.get(Asset, asset_id)
+
+    if asset is None:
+        abort(404)
+
+    location_id = request.form["location_id"]
+    location = db.session.get(Location, int(location_id))
+
+    if location is not None:
+        asset.location_id = location.id
+        db.session.commit()
+
+    return redirect(url_for("assets"))

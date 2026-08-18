@@ -40,6 +40,23 @@
                 <button type="submit">Update</button>
             </form>
 
+
+            <form method="POST" action="{{ url_for('move_asset', asset_id=asset.id) }}" style="display:inline;">
+
+                <select name="location_id" required>
+                    {% for location in locations %}
+                    <option value="{{ location.id }}" {% if location.id==asset.location_id %}selected{% endif %}>
+                        {{ location.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit">Move</button>
+            </form>
+
+
+
+
             <form method="POST" action="{{ url_for('delete_asset', asset_id=asset.id) }}" style="display:inline;">
                 <button type="submit">Delete</button>
             </form>
@@ -72,7 +89,9 @@
         </select>
 
         <button type="submit">Add Asset</button>
+
     </form>
+
 
 </body>
 
