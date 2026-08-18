@@ -160,7 +160,6 @@ def delete_category(category_id):
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
-
 class Asset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -180,6 +179,24 @@ class Asset(db.Model):
         nullable=False
     )
     location = db.relationship("Location")
+
+
+@app.route("/locations")
+def locations():
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    location_list = db.session.execute(
+        db.select(Location).order_by(Location.name)
+    ).scalars().all()
+
+    return render_template(
+        "locations.html",
+        locations=location_list,
+        user=user
+    )
 
 
 @app.route("/assets")
@@ -209,6 +226,32 @@ def assets():
         user=user
     )
 
+   
+
+@app.route("/locations/add", methods=["POST"])
+def add_location():
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    if user.role != ROLE_ADMIN:
+        abort(403)
+
+    name = request.form["name"].strip()
+
+    if name:
+        existing_location = db.session.execute(
+            db.select(Location).where(Location.name == name)
+        ).scalar_one_or_none()
+
+        if existing_location is None:
+            location = Location(name=name)
+            db.session.add(location)
+            db.session.commit()
+
+    return redirect(url_for("locations"))
+
 
 @app.route("/assets/add", methods=["POST"])
 def add_asset():
@@ -237,10 +280,61 @@ def add_asset():
         db.session.add(asset)
         db.session.commit()
 
-
-        
-
     return redirect(url_for("assets"))
+
+
+@app.route("/locations/<int:location_id>/update", methods=["POST"])
+def update_location(location_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    if user.role != ROLE_ADMIN:
+        abort(403)
+
+    location = db.session.get(Location, location_id)
+
+    if location is None:
+        abort(404)
+
+    name = request.form["name"].strip()
+
+    if name:
+        existing_location = db.session.execute(
+            db.select(Location).where(
+                Location.name == name,
+                Location.id != location_id
+            )
+        ).scalar_one_or_none()
+
+        if existing_location is None:
+            location.name = name
+            db.session.commit()
+
+    return redirect(url_for("locations"))
+
+
+@app.route("/locations/<int:location_id>/delete", methods=["POST"])
+def delete_location(location_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    if user.role != ROLE_ADMIN:
+        abort(403)
+
+    location = db.session.get(Location, location_id)
+
+    if location is None:
+        abort(404)
+
+    db.session.delete(location)
+    db.session.commit()
+
+    return redirect(url_for("locations"))
+
 
 @app.route("/assets/<int:asset_id>/update", methods=["POST"])
 def update_asset(asset_id):
@@ -269,7 +363,9 @@ def update_asset(asset_id):
         asset.location_id = location.id
 
         db.session.commit()
+
     return redirect(url_for("assets"))
+
 
 @app.route("/assets/<int:asset_id>/delete", methods=["POST"])
 def delete_asset(asset_id):
@@ -287,6 +383,7 @@ def delete_asset(asset_id):
     db.session.commit()
 
     return redirect(url_for("assets"))
+
 
 @app.route("/assets/<int:asset_id>/move", methods=["POST"])
 def move_asset(asset_id):
