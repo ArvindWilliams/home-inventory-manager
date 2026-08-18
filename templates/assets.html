@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Assets | Home Inventory Manager</title>
+</head>
+
+<body>
+
+    <h1>Assets</h1>
+
+    <ul>
+        {% for asset in assets %}
+
+        <li>
+            <form method="POST" action="{{ url_for('update_asset', asset_id=asset.id) }}" style="display:inline;">
+
+                <input type="text" name="name" value="{{ asset.name }}" required>
+
+                <input type="text" name="description" value="{{ asset.description or '' }}">
+
+                <select name="category_id" required>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id==asset.category_id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <select name="location_id" required>
+                    {% for location in locations %}
+                    <option value="{{ location.id }}" {% if location.id==asset.location_id %}selected{% endif %}>
+                        {{ location.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <span>{{ asset.status }}</span>
+                <button type="submit">Update</button>
+            </form>
+
+
+            <form method="POST" action="{{ url_for('move_asset', asset_id=asset.id) }}" style="display:inline;">
+
+                <select name="location_id" required>
+                    {% for location in locations %}
+                    <option value="{{ location.id }}" {% if location.id==asset.location_id %}selected{% endif %}>
+                        {{ location.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit">Move</button>
+            </form>
+
+
+
+
+            <form method="POST" action="{{ url_for('delete_asset', asset_id=asset.id) }}" style="display:inline;">
+                <button type="submit">Delete</button>
+            </form>
+        </li>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Add Asset</h2>
+
+    <form method="POST" action="{{ url_for('add_asset') }}">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="description">Description</label>
+        <input type="text" id="description" name="description">
+
+        <label for="category_id">Category</label>
+        <select id="category_id" name="category_id" required>
+            {% for category in categories %}
+            <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="location_id">Location</label>
+        <select id="location_id" name="location_id" required>
+            {% for location in locations %}
+            <option value="{{ location.id }}">{{ location.name }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Add Asset</button>
+
+    </form>
+
+
+</body>
+
+</html>
