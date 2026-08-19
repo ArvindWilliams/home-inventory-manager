@@ -15,6 +15,49 @@
         <a href="{{ url_for('insurance_records') }}">View Insurance Records</a>
     </p>
 
+    <h2>Search and Filter</h2>
+    <form method="GET" action="{{ url_for('assets') }}">
+        <label for="search">Asset name</label>
+        <input type="text" id="search" name="search" value="{{ search }}" placeholder="Search asset name">
+
+        <label for="filter_category">Category</label>
+        <select id="filter_category" name="category_id">
+            <option value="">All categories</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}" {% if selected_category_id == category.id|string %}selected{% endif %}>
+                {{ category.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="filter_location">Location</label>
+        <select id="filter_location" name="location_id">
+            <option value="">All locations</option>
+            {% for location in locations %}
+            <option value="{{ location.id }}" {% if selected_location_id == location.id|string %}selected{% endif %}>
+                {{ location.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="filter_status">Status</label>
+        <select id="filter_status" name="status">
+            <option value="">All statuses</option>
+            {% for status_option in asset_statuses %}
+            <option value="{{ status_option }}" {% if selected_status == status_option %}selected{% endif %}>
+                {{ status_option }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Apply Filters</button>
+        <a href="{{ url_for('assets') }}">Clear Filters</a>
+    </form>
+
+    {% if not assets %}
+    <p>No assets match the selected search or filters.</p>
+    {% endif %}
+
     <ul>
         {% for asset in assets %}
 
