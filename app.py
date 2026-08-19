@@ -191,6 +191,7 @@ class Asset(db.Model):
     location = db.relationship("Location")
     loans = db.relationship("Loan", back_populates="asset", cascade="all, delete-orphan")
     go_bag_item = db.relationship("GoBagItem", back_populates="asset", uselist=False, cascade="all, delete-orphan")
+    insurance_record = db.relationship("InsuranceRecord", back_populates="asset", uselist=False, cascade="all, delete-orphan")
 
 
 class Loan(db.Model):
@@ -211,6 +212,18 @@ class GoBagItem(db.Model):
     notes = db.Column(db.String(255))
 
     asset = db.relationship("Asset", back_populates="go_bag_item")
+
+
+class InsuranceRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    asset_id = db.Column(db.Integer, db.ForeignKey("asset.id"), unique=True, nullable=False)
+    provider = db.Column(db.String(100))
+    policy_number = db.Column(db.String(100))
+    insured_value = db.Column(db.Float)
+    evidence_reference = db.Column(db.String(255))
+    claim_ready = db.Column(db.Boolean, nullable=False, default=False)
+
+    asset = db.relationship("Asset", back_populates="insurance_record")
 
 
 # Create all tables only after every model has been declared.
@@ -537,6 +550,64 @@ def remove_from_go_bag(item_id):
     db.session.commit()
 
     return redirect(url_for("go_bag"))
+
+
+@app.route("/insurance")
+def insurance_records():
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset_list = db.session.execute(
+        db.select(Asset).order_by(Asset.name)
+    ).scalars().all()
+
+    return render_template("insurance.html", assets=asset_list, user=user)
+
+
+@app.route("/assets/<int:asset_id>/insurance", methods=["POST"])
+def save_insurance_record(asset_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset = db.session.get(Asset, asset_id)
+    if asset is None:
+        abort(404)
+
+    provider = request.form.get("provider", "").strip()
+    policy_number = request.form.get("policy_number", "").strip()
+    insured_value_text = request.form.get("insured_value", "").strip()
+    evidence_reference = request.form.get("evidence_reference", "").strip()
+    claim_ready = request.form.get("claim_ready") == "on"
+
+    insured_value = None
+    if insured_value_text:
+        try:
+            insured_value = float(insured_value_text)
+        except ValueError:
+            abort(400)
+
+        if insured_value < 0:
+            abort(400)
+
+    insurance_record = asset.insurance_record
+
+    if insurance_record is None:
+        insurance_record = InsuranceRecord(asset_id=asset.id)
+        db.session.add(insurance_record)
+
+    insurance_record.provider = provider or None
+    insurance_record.policy_number = policy_number or None
+    insurance_record.insured_value = insured_value
+    insurance_record.evidence_reference = evidence_reference or None
+    insurance_record.claim_ready = claim_ready
+
+    db.session.commit()
+
+    return redirect(url_for("insurance_records"))
 
 
 @app.route("/assets/<int:asset_id>/lend", methods=["POST"])
