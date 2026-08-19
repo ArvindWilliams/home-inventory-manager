@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, session, redirect, url_for, abort
+from flask import Flask, render_template, request, session, redirect, url_for, abort, Response
 from datetime import date
+import csv
+import io
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -731,3 +733,67 @@ def loan_history():
     ).scalars().all()
 
     return render_template("loans.html", loans=loans, user=user)
+
+@app.route("/reports/inventory.csv")
+def export_inventory_csv():
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    if user.role != ROLE_ADMIN:
+        abort(403)
+
+    assets = db.session.execute(
+        db.select(Asset).order_by(Asset.name)
+    ).scalars().all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "Asset ID",
+        "Name",
+        "Description",
+        "Category",
+        "Location",
+        "Status",
+        "Go-Bag",
+        "Go-Bag Priority",
+        "Claim Ready",
+        "Insurance Provider",
+        "Policy Reference",
+        "Insured Value",
+    ])
+
+    for asset in assets:
+        go_bag_item = asset.go_bag_item
+        insurance_record = asset.insurance_record
+
+        writer.writerow([
+            asset.id,
+            asset.name,
+            asset.description or "",
+            asset.category.name if asset.category else "",
+            asset.location.name if asset.location else "",
+            asset.status,
+            "Yes" if go_bag_item else "No",
+            go_bag_item.priority if go_bag_item else "",
+            "Yes" if insurance_record and insurance_record.claim_ready else "No",
+            insurance_record.provider if insurance_record else "",
+            insurance_record.policy_number if insurance_record else "",
+            insurance_record.insured_value
+            if insurance_record and insurance_record.insured_value is not None
+            else "",
+        ])
+
+    csv_content = output.getvalue()
+    output.close()
+
+    return Response(
+        csv_content,
+        mimetype="text/csv",
+        headers={
+            "Content-Disposition": "attachment; filename=home_inventory_report.csv"
+        },
+    )
