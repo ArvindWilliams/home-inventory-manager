@@ -36,9 +36,31 @@
                     {% endfor %}
                 </select>
 
-                <span>{{ asset.status }}</span>
+                <span>Status: {{ asset.status }}</span>
                 <button type="submit">Update</button>
             </form>
+
+            {% if asset.status == "Active" %}
+            <form method="POST" action="{{ url_for('update_asset_status', asset_id=asset.id) }}" style="display:inline;">
+                <select name="status" required>
+                    <option value="Missing">Mark Missing</option>
+                    <option value="Disposed">Mark Disposed</option>
+                </select>
+                <button type="submit">Change Status</button>
+            </form>
+            {% elif asset.status == "Missing" %}
+            <form method="POST" action="{{ url_for('update_asset_status', asset_id=asset.id) }}" style="display:inline;">
+                <select name="status" required>
+                    <option value="Active">Restore Active</option>
+                    <option value="Disposed">Mark Disposed</option>
+                </select>
+                <button type="submit">Change Status</button>
+            </form>
+            {% elif asset.status == "Lent" %}
+            <span>Return this asset through the lending workflow.</span>
+            {% elif asset.status == "Disposed" %}
+            <span>No further lifecycle changes are available.</span>
+            {% endif %}
 
 
             <form method="POST" action="{{ url_for('move_asset', asset_id=asset.id) }}" style="display:inline;">
