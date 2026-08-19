@@ -9,6 +9,7 @@
 <body>
 
     <h1>Assets</h1>
+    <p><a href="{{ url_for('loan_history') }}">View Loan History</a></p>
 
     <ul>
         {% for asset in assets %}
@@ -41,15 +42,24 @@
             </form>
 
             {% if asset.status == "Active" %}
-            <form method="POST" action="{{ url_for('update_asset_status', asset_id=asset.id) }}" style="display:inline;">
+            <form method="POST" action="{{ url_for('update_asset_status', asset_id=asset.id) }}"
+                style="display:inline;">
                 <select name="status" required>
                     <option value="Missing">Mark Missing</option>
                     <option value="Disposed">Mark Disposed</option>
                 </select>
                 <button type="submit">Change Status</button>
             </form>
+
+            <form method="POST" action="{{ url_for('lend_asset', asset_id=asset.id) }}" style="display:inline;">
+                <input type="text" name="borrower_name" placeholder="Borrower name" required>
+                <label for="due_date_{{ asset.id }}">Expected return date</label>
+                <input type="date" id="due_date_{{ asset.id }}" name="due_date">
+                <button type="submit">Lend Asset</button>
+            </form>
             {% elif asset.status == "Missing" %}
-            <form method="POST" action="{{ url_for('update_asset_status', asset_id=asset.id) }}" style="display:inline;">
+            <form method="POST" action="{{ url_for('update_asset_status', asset_id=asset.id) }}"
+                style="display:inline;">
                 <select name="status" required>
                     <option value="Active">Restore Active</option>
                     <option value="Disposed">Mark Disposed</option>
@@ -57,7 +67,16 @@
                 <button type="submit">Change Status</button>
             </form>
             {% elif asset.status == "Lent" %}
-            <span>Return this asset through the lending workflow.</span>
+            {% set loan = active_loans.get(asset.id) %}
+            {% if loan %}
+            <span>Lent to {{ loan.borrower_name }} on {{ loan.lent_date }}{% if loan.due_date %}; due {{ loan.due_date
+                }}{% endif %}.</span>
+            <form method="POST" action="{{ url_for('return_asset', loan_id=loan.id) }}" style="display:inline;">
+                <button type="submit">Return Asset</button>
+            </form>
+            {% else %}
+            <span>Lent status recorded; no active loan was found.</span>
+            {% endif %}
             {% elif asset.status == "Disposed" %}
             <span>No further lifecycle changes are available.</span>
             {% endif %}

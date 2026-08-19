@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, abort
+from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -43,9 +44,6 @@ def get_current_user():
 @app.route("/")
 def home():
     return "Home Inventory Manager"
-
-with app.app_context():
-    db.create_all()
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -176,7 +174,7 @@ class Asset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255))
-    status = db.Column(db.String(20), nullable=False, default="Active")
+    status = db.Column(db.String(20), nullable=False, default=ASSET_STATUS_ACTIVE)
 
     category_id = db.Column(
         db.Integer,
@@ -191,6 +189,23 @@ class Asset(db.Model):
         nullable=False
     )
     location = db.relationship("Location")
+    loans = db.relationship("Loan", back_populates="asset", cascade="all, delete-orphan")
+
+
+class Loan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    asset_id = db.Column(db.Integer, db.ForeignKey("asset.id"), nullable=False)
+    borrower_name = db.Column(db.String(100), nullable=False)
+    lent_date = db.Column(db.Date, nullable=False, default=date.today)
+    due_date = db.Column(db.Date)
+    returned_date = db.Column(db.Date)
+
+    asset = db.relationship("Asset", back_populates="loans")
+
+
+# Create all tables only after every model has been declared.
+with app.app_context():
+    db.create_all()
 
 
 @app.route("/locations")
@@ -230,11 +245,17 @@ def assets():
         db.select(Location).order_by(Location.name)
     ).scalars().all()
 
+    active_loan_list = db.session.execute(
+        db.select(Loan).where(Loan.returned_date.is_(None))
+    ).scalars().all()
+    active_loans = {loan.asset_id: loan for loan in active_loan_list}
+
     return render_template(
         "assets.html",
         assets=asset_list,
         categories=categories,
         locations=locations,
+        active_loans=active_loans,
         user=user
     )
 
@@ -440,3 +461,97 @@ def update_asset_status(asset_id):
     db.session.commit()
 
     return redirect(url_for("assets"))
+
+
+@app.route("/assets/<int:asset_id>/lend", methods=["POST"])
+def lend_asset(asset_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset = db.session.get(Asset, asset_id)
+
+    if asset is None:
+        abort(404)
+
+    if asset.status != ASSET_STATUS_ACTIVE:
+        abort(400)
+
+    existing_loan = db.session.execute(
+        db.select(Loan).where(
+            Loan.asset_id == asset_id,
+            Loan.returned_date.is_(None)
+        )
+    ).scalar_one_or_none()
+
+    if existing_loan is not None:
+        abort(400)
+
+    borrower_name = request.form.get("borrower_name", "").strip()
+    due_date_text = request.form.get("due_date", "").strip()
+
+    if not borrower_name:
+        abort(400)
+
+    due_date = None
+    if due_date_text:
+        try:
+            due_date = date.fromisoformat(due_date_text)
+        except ValueError:
+            abort(400)
+
+        if due_date < date.today():
+            abort(400)
+
+    loan = Loan(
+        asset_id=asset.id,
+        borrower_name=borrower_name,
+        lent_date=date.today(),
+        due_date=due_date
+    )
+
+    asset.status = ASSET_STATUS_LENT
+    db.session.add(loan)
+    db.session.commit()
+
+    return redirect(url_for("assets"))
+
+
+@app.route("/loans/<int:loan_id>/return", methods=["POST"])
+def return_asset(loan_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    loan = db.session.get(Loan, loan_id)
+
+    if loan is None:
+        abort(404)
+
+    if loan.returned_date is not None:
+        abort(400)
+
+    if loan.asset.status != ASSET_STATUS_LENT:
+        abort(400)
+
+    loan.returned_date = date.today()
+    loan.asset.status = ASSET_STATUS_ACTIVE
+    db.session.commit()
+
+    return redirect(url_for("assets"))
+
+
+@app.route("/loans")
+def loan_history():
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    loans = db.session.execute(
+        db.select(Loan).order_by(Loan.lent_date.desc(), Loan.id.desc())
+    ).scalars().all()
+
+    return render_template("loans.html", loans=loans, user=user)
