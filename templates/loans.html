@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Loan History | Home Inventory Manager</title>
+</head>
+
+<body>
+    <h1>Loan History</h1>
+    <p><a href="{{ url_for('assets') }}">Back to Assets</a></p>
+
+    {% if loans %}
+    <table>
+        <thead>
+            <tr>
+                <th>Asset</th>
+                <th>Borrower</th>
+                <th>Lent</th>
+                <th>Due</th>
+                <th>Returned</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+            <tr>
+                <td>{{ loan.asset.name }}</td>
+                <td>{{ loan.borrower_name }}</td>
+                <td>{{ loan.lent_date }}</td>
+                <td>{{ loan.due_date or '-' }}</td>
+                <td>{{ loan.returned_date or 'Active loan' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No lending history is available.</p>
+    {% endif %}
+</body>
+
+</html>
