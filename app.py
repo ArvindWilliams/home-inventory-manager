@@ -256,8 +256,27 @@ def assets():
     if user is None:
         return redirect(url_for("login"))
 
+    search = request.args.get("search", "").strip()
+    category_id = request.args.get("category_id", "").strip()
+    location_id = request.args.get("location_id", "").strip()
+    status = request.args.get("status", "").strip()
+
+    query = db.select(Asset)
+
+    if search:
+        query = query.where(Asset.name.ilike(f"%{search}%"))
+
+    if category_id:
+        query = query.where(Asset.category_id == int(category_id))
+
+    if location_id:
+        query = query.where(Asset.location_id == int(location_id))
+
+    if status:
+        query = query.where(Asset.status == status)
+
     asset_list = db.session.execute(
-        db.select(Asset).order_by(Asset.name)
+        query.order_by(Asset.name)
     ).scalars().all()
 
     categories = db.session.execute(
@@ -279,6 +298,16 @@ def assets():
         categories=categories,
         locations=locations,
         active_loans=active_loans,
+        search=search,
+        selected_category_id=category_id,
+        selected_location_id=location_id,
+        selected_status=status,
+        asset_statuses=[
+            ASSET_STATUS_ACTIVE,
+            ASSET_STATUS_MISSING,
+            ASSET_STATUS_LENT,
+            ASSET_STATUS_DISPOSED,
+        ],
         user=user
     )
 
