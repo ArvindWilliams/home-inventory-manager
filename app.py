@@ -190,6 +190,7 @@ class Asset(db.Model):
     )
     location = db.relationship("Location")
     loans = db.relationship("Loan", back_populates="asset", cascade="all, delete-orphan")
+    go_bag_item = db.relationship("GoBagItem", back_populates="asset", uselist=False, cascade="all, delete-orphan")
 
 
 class Loan(db.Model):
@@ -201,6 +202,15 @@ class Loan(db.Model):
     returned_date = db.Column(db.Date)
 
     asset = db.relationship("Asset", back_populates="loans")
+
+
+class GoBagItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    asset_id = db.Column(db.Integer, db.ForeignKey("asset.id"), unique=True, nullable=False)
+    priority = db.Column(db.String(20), nullable=False, default="Medium")
+    notes = db.Column(db.String(255))
+
+    asset = db.relationship("Asset", back_populates="go_bag_item")
 
 
 # Create all tables only after every model has been declared.
@@ -461,6 +471,72 @@ def update_asset_status(asset_id):
     db.session.commit()
 
     return redirect(url_for("assets"))
+
+
+@app.route("/go-bag")
+def go_bag():
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    items = db.session.execute(
+        db.select(GoBagItem).join(GoBagItem.asset).order_by(GoBagItem.priority, Asset.name)
+    ).scalars().all()
+
+    return render_template("go_bag.html", items=items, user=user)
+
+
+@app.route("/assets/<int:asset_id>/go-bag/add", methods=["POST"])
+def add_to_go_bag(asset_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset = db.session.get(Asset, asset_id)
+    if asset is None:
+        abort(404)
+
+    existing_item = db.session.execute(
+        db.select(GoBagItem).where(GoBagItem.asset_id == asset_id)
+    ).scalar_one_or_none()
+
+    if existing_item is not None:
+        abort(400)
+
+    priority = request.form.get("priority", "Medium").strip()
+    notes = request.form.get("notes", "").strip()
+
+    if priority not in {"High", "Medium", "Low"}:
+        abort(400)
+
+    item = GoBagItem(
+        asset_id=asset.id,
+        priority=priority,
+        notes=notes or None
+    )
+    db.session.add(item)
+    db.session.commit()
+
+    return redirect(url_for("assets"))
+
+
+@app.route("/go-bag/<int:item_id>/remove", methods=["POST"])
+def remove_from_go_bag(item_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    item = db.session.get(GoBagItem, item_id)
+    if item is None:
+        abort(404)
+
+    db.session.delete(item)
+    db.session.commit()
+
+    return redirect(url_for("go_bag"))
 
 
 @app.route("/assets/<int:asset_id>/lend", methods=["POST"])

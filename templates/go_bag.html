@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Emergency Go-Bag | Home Inventory Manager</title>
+</head>
+<body>
+    <h1>Emergency Go-Bag</h1>
+    <p><a href="{{ url_for('assets') }}">Back to Assets</a></p>
+
+    {% if items %}
+    <table>
+        <thead>
+            <tr>
+                <th>Asset</th>
+                <th>Location</th>
+                <th>Priority</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.asset.name }}</td>
+                <td>{{ item.asset.location.name }}</td>
+                <td>{{ item.priority }}</td>
+                <td>{{ item.notes or '-' }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('remove_from_go_bag', item_id=item.id) }}">
+                        <button type="submit">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No assets have been added to the emergency Go-Bag.</p>
+    {% endif %}
+</body>
+</html>

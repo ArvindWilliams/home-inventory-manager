@@ -9,7 +9,8 @@
 <body>
 
     <h1>Assets</h1>
-    <p><a href="{{ url_for('loan_history') }}">View Loan History</a></p>
+    <p><a href="{{ url_for('loan_history') }}">View Loan History</a> | <a href="{{ url_for('go_bag') }}">View Emergency
+            Go-Bag</a></p>
 
     <ul>
         {% for asset in assets %}
@@ -97,6 +98,21 @@
 
 
 
+
+            {% if asset.go_bag_item %}
+            <span>Go-Bag: {{ asset.go_bag_item.priority }} priority</span>
+            {% else %}
+            <form method="POST" action="{{ url_for('add_to_go_bag', asset_id=asset.id) }}" style="display:inline;">
+                <label for="gobag_priority_{{ asset.id }}">Priority when added to Go-Bag</label>
+                <select id="gobag_priority_{{ asset.id }}" name="priority">
+                    <option value="High">High</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+                <input type="text" name="notes" placeholder="Preparation or retrieval note">
+                <button type="submit">Add to Go-Bag</button>
+            </form>
+            {% endif %}
 
             <form method="POST" action="{{ url_for('delete_asset', asset_id=asset.id) }}" style="display:inline;">
                 <button type="submit">Delete</button>
