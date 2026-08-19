@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Insurance Records | Home Inventory Manager</title>
+</head>
+
+<body>
+    <h1>Insurance Evidence & Claim Readiness</h1>
+    <p><a href="{{ url_for('assets') }}">Back to Assets</a></p>
+
+    {% if assets %}
+    <ul>
+        {% for asset in assets %}
+        {% set insurance = asset.insurance_record %}
+        <li>
+            <h2>{{ asset.name }}</h2>
+            <p>Category: {{ asset.category.name }} | Location: {{ asset.location.name }} | Status: {{ asset.status }}</p>
+
+            <form method="POST" action="{{ url_for('save_insurance_record', asset_id=asset.id) }}">
+                <label for="provider_{{ asset.id }}">Insurance provider</label>
+                <input type="text" id="provider_{{ asset.id }}" name="provider" value="{{ insurance.provider if insurance and insurance.provider else '' }}">
+
+                <label for="policy_number_{{ asset.id }}">Policy/reference number</label>
+                <input type="text" id="policy_number_{{ asset.id }}" name="policy_number" value="{{ insurance.policy_number if insurance and insurance.policy_number else '' }}">
+
+                <label for="insured_value_{{ asset.id }}">Insured value</label>
+                <input type="number" id="insured_value_{{ asset.id }}" name="insured_value" min="0" step="0.01" value="{{ insurance.insured_value if insurance and insurance.insured_value is not none else '' }}">
+
+                <label for="evidence_reference_{{ asset.id }}">Evidence reference or note</label>
+                <input type="text" id="evidence_reference_{{ asset.id }}" name="evidence_reference" value="{{ insurance.evidence_reference if insurance and insurance.evidence_reference else '' }}" placeholder="e.g. Receipt stored in household safe">
+
+                <label for="claim_ready_{{ asset.id }}">
+                    <input type="checkbox" id="claim_ready_{{ asset.id }}" name="claim_ready" {% if insurance and insurance.claim_ready %}checked{% endif %}>
+                    Claim ready
+                </label>
+
+                <button type="submit">{% if insurance %}Update Insurance Record{% else %}Save Insurance Record{% endif %}</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No assets are available for insurance records.</p>
+    {% endif %}
+</body>
+
+</html>

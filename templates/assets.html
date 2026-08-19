@@ -9,8 +9,11 @@
 <body>
 
     <h1>Assets</h1>
-    <p><a href="{{ url_for('loan_history') }}">View Loan History</a> | <a href="{{ url_for('go_bag') }}">View Emergency
-            Go-Bag</a></p>
+    <p>
+        <a href="{{ url_for('loan_history') }}">View Loan History</a> |
+        <a href="{{ url_for('go_bag') }}">View Emergency Go-Bag</a> |
+        <a href="{{ url_for('insurance_records') }}">View Insurance Records</a>
+    </p>
 
     <ul>
         {% for asset in assets %}
@@ -113,12 +116,20 @@
                 <button type="submit">Add to Go-Bag</button>
             </form>
             {% endif %}
-
+            {% if asset.insurance_record %}
+            {% if asset.insurance_record.claim_ready %}
+            <span>Insurance: Claim ready</span>
+            {% else %}
+            <span>Insurance: Record incomplete</span>
+            {% endif %}
+            {% else %}
+            <span>Insurance: No record</span>
+            {% endif %}
             <form method="POST" action="{{ url_for('delete_asset', asset_id=asset.id) }}" style="display:inline;">
                 <button type="submit">Delete</button>
             </form>
         </li>
-        </li>
+
         {% endfor %}
     </ul>
 
