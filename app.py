@@ -5,6 +5,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 ROLE_ADMIN = "Administrator"
 ROLE_USER = "User"
 
+ASSET_STATUS_ACTIVE = "Active"
+ASSET_STATUS_MISSING = "Missing"
+ASSET_STATUS_LENT = "Lent"
+ASSET_STATUS_DISPOSED = "Disposed"
+
+MANUAL_STATUS_TRANSITIONS = {
+    ASSET_STATUS_ACTIVE: {ASSET_STATUS_MISSING, ASSET_STATUS_DISPOSED},
+    ASSET_STATUS_MISSING: {ASSET_STATUS_ACTIVE, ASSET_STATUS_DISPOSED},
+    ASSET_STATUS_LENT: set(),
+    ASSET_STATUS_DISPOSED: set(),
+}
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-secret-key"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///him.db"
@@ -272,7 +284,7 @@ def add_asset():
         asset = Asset(
             name=name,
             description=description,
-            status="Active",
+            status=ASSET_STATUS_ACTIVE,
             category_id=int(category_id),
             location_id=int(location_id)
         )
@@ -403,5 +415,28 @@ def move_asset(asset_id):
     if location is not None:
         asset.location_id = location.id
         db.session.commit()
+
+    return redirect(url_for("assets"))
+
+@app.route("/assets/<int:asset_id>/status", methods=["POST"])
+def update_asset_status(asset_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset = db.session.get(Asset, asset_id)
+
+    if asset is None:
+        abort(404)
+
+    new_status = request.form.get("status", "").strip()
+    allowed_transitions = MANUAL_STATUS_TRANSITIONS.get(asset.status, set())
+
+    if new_status not in allowed_transitions:
+        abort(400)
+
+    asset.status = new_status
+    db.session.commit()
 
     return redirect(url_for("assets"))
