@@ -9,11 +9,17 @@
 <body>
 
     <h1>Assets</h1>
+
+
     <p>
         <a href="{{ url_for('loan_history') }}">View Loan History</a> |
         <a href="{{ url_for('go_bag') }}">View Emergency Go-Bag</a> |
         <a href="{{ url_for('insurance_records') }}">View Insurance Records</a>
+        {% if user.role == "Administrator" %}
+        | <a href="{{ url_for('export_inventory_csv') }}">Export Inventory CSV</a>
+        {% endif %}
     </p>
+
 
     <h2>Search and Filter</h2>
     <form method="GET" action="{{ url_for('assets') }}">
@@ -24,7 +30,7 @@
         <select id="filter_category" name="category_id">
             <option value="">All categories</option>
             {% for category in categories %}
-            <option value="{{ category.id }}" {% if selected_category_id == category.id|string %}selected{% endif %}>
+            <option value="{{ category.id }}" {% if selected_category_id==category.id|string %}selected{% endif %}>
                 {{ category.name }}
             </option>
             {% endfor %}
@@ -34,7 +40,7 @@
         <select id="filter_location" name="location_id">
             <option value="">All locations</option>
             {% for location in locations %}
-            <option value="{{ location.id }}" {% if selected_location_id == location.id|string %}selected{% endif %}>
+            <option value="{{ location.id }}" {% if selected_location_id==location.id|string %}selected{% endif %}>
                 {{ location.name }}
             </option>
             {% endfor %}
@@ -44,7 +50,7 @@
         <select id="filter_status" name="status">
             <option value="">All statuses</option>
             {% for status_option in asset_statuses %}
-            <option value="{{ status_option }}" {% if selected_status == status_option %}selected{% endif %}>
+            <option value="{{ status_option }}" {% if selected_status==status_option %}selected{% endif %}>
                 {{ status_option }}
             </option>
             {% endfor %}
