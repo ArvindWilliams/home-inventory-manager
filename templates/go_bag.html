@@ -1,42 +1,157 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Emergency Go-Bag | Home Inventory Manager</title>
-</head>
-<body>
-    <h1>Emergency Go-Bag</h1>
-    <p><a href="{{ url_for('assets') }}">Back to Assets</a></p>
+{% extends "base.html" %}
 
-    {% if items %}
-    <table>
-        <thead>
-            <tr>
-                <th>Asset</th>
-                <th>Location</th>
-                <th>Priority</th>
-                <th>Notes</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ item.asset.name }}</td>
-                <td>{{ item.asset.location.name }}</td>
-                <td>{{ item.priority }}</td>
-                <td>{{ item.notes or '-' }}</td>
-                <td>
-                    <form method="POST" action="{{ url_for('remove_from_go_bag', item_id=item.id) }}">
-                        <button type="submit">Remove</button>
+{% block title %}Emergency Go-Bag | Home Inventory Manager{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <h1>Emergency Go-Bag</h1>
+    <p>Keep priority household items visible and ready for rapid retrieval in an emergency.</p>
+</div>
+
+{% if items %}
+<div class="summary-strip">
+    <div class="summary-strip-item">
+        <strong>{{ items|length }}</strong>
+        <span>Prepared items</span>
+    </div>
+
+    <div class="summary-strip-item">
+        <strong>{{ items|selectattr('priority', 'equalto', 'High')|list|length }}</strong>
+        <span>High priority</span>
+    </div>
+
+    <div class="summary-strip-item">
+        <strong>{{ items|selectattr('priority', 'equalto', 'Medium')|list|length }}</strong>
+        <span>Medium priority</span>
+    </div>
+</div>
+
+<section class="panel gobag-panel">
+    <div class="panel-heading gobag-toolbar">
+        <div>
+            <h2>Prepared items</h2>
+            <p>Items are shown with their current household location and retrieval notes.</p>
+        </div>
+
+        <div class="toolbar-actions">
+            <form method="GET" action="{{ url_for('go_bag') }}">
+                <div class="field sort-field">
+                    <label for="sort">Sort by</label>
+                    <select id="sort" name="sort" onchange="this.form.submit()">
+                        <option value="priority" {% if sort_by=="priority" %}selected{% endif %}>
+                            Priority
+                        </option>
+                        <option value="location" {% if sort_by=="location" %}selected{% endif %}>
+                            Location
+                        </option>
+                        <option value="name" {% if sort_by=="name" %}selected{% endif %}>
+                            Asset name
+                        </option>
+                    </select>
+                </div>
+            </form>
+
+            <a class="button button-primary toolbar-add" href="{{ url_for('assets') }}">
+                Add from inventory
+            </a>
+        </div>
+    </div>
+
+
+    <div class="record-table">
+        <div class="record-table-header gobag-record-grid">
+            <span>Asset</span>
+            <span>Location</span>
+            <span>Priority</span>
+            <span>Preparation / retrieval note</span>
+            <span>Actions</span>
+        </div>
+
+        {% for item in items %}
+        <article class="record-row">
+            <div class="record-row-main gobag-record-grid">
+                <div class="record-primary">
+                    <strong>{{ item.asset.name }}</strong>
+                </div>
+
+                <div>{{ item.asset.location.name }}</div>
+
+                <div>
+                    <span class="priority-badge priority-{{ item.priority|lower }}">
+                        {{ item.priority }}
+                    </span>
+                </div>
+
+                <div class="record-note">
+                    {{ item.notes or "No note recorded" }}
+                </div>
+
+                <div class="record-actions">
+                    <button class="record-edit-toggle" type="button"
+                        onclick="document.getElementById('gobag-edit-{{ item.id }}').toggleAttribute('open')">
+                        Edit
+                    </button>
+
+                    <form method="POST" action="{{ url_for('remove_from_go_bag', item_id=item.id) }}"
+                        onsubmit="return confirm('Remove this item from the Emergency Go-Bag? The asset will remain in the inventory.');">
+                        <button class="record-remove" type="submit">Remove</button>
                     </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No assets have been added to the emergency Go-Bag.</p>
-    {% endif %}
-</body>
-</html>
+                </div>
+            </div>
+
+            <details class="record-inline-editor" id="gobag-edit-{{ item.id }}">
+                <summary>Edit {{ item.asset.name }}</summary>
+
+                <form class="form-grid" method="POST" action="{{ url_for('update_go_bag_item', item_id=item.id) }}">
+                    <input type="hidden" name="return_sort" value="{{ sort_by }}">
+
+                    <div class="field">
+                        <label for="priority_{{ item.id }}">Priority</label>
+                        <select id="priority_{{ item.id }}" name="priority" required>
+                            <option value="High" {% if item.priority=="High" %}selected{% endif %}>High</option>
+                            <option value="Medium" {% if item.priority=="Medium" %}selected{% endif %}>Medium</option>
+                            <option value="Low" {% if item.priority=="Low" %}selected{% endif %}>Low</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="notes_{{ item.id }}">Preparation / retrieval note</label>
+                        <input type="text" id="notes_{{ item.id }}" name="notes" value="{{ item.notes or '' }}"
+                            placeholder="Optional preparation or retrieval note">
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="button button-primary" type="submit">
+                            Save changes
+                        </button>
+
+                        <button class="button button-secondary" type="button" onclick="
+            this.form.reset();
+            document.getElementById('gobag-edit-{{ item.id }}').removeAttribute('open');
+        ">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </details>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="gobag-guidance">
+    <strong>Emergency preparation</strong>
+    <p>Keep locations and retrieval notes current so priority items can be found quickly when needed.</p>
+</div>
+
+{% else %}
+<div class="empty-state gobag-empty">
+    <h2>Your Emergency Go-Bag is empty</h2>
+    <p>Add important household assets from the inventory and assign a retrieval priority.</p>
+
+    <a class="button button-primary" href="{{ url_for('assets') }}">
+        View inventory
+    </a>
+</div>
+{% endif %}
+{% endblock %}

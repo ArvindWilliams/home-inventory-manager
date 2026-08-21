@@ -526,11 +526,37 @@ def go_bag():
     if user is None:
         return redirect(url_for("login"))
 
+    sort_by = request.args.get("sort", "priority")
+
     items = db.session.execute(
-        db.select(GoBagItem).join(GoBagItem.asset).order_by(GoBagItem.priority, Asset.name)
+        db.select(GoBagItem).join(GoBagItem.asset)
     ).scalars().all()
 
-    return render_template("go_bag.html", items=items, user=user)
+    if sort_by == "location":
+        items.sort(
+            key=lambda item: (
+                item.asset.location.name.lower(),
+                item.asset.name.lower()
+            )
+        )
+    elif sort_by == "name":
+        items.sort(key=lambda item: item.asset.name.lower())
+    else:
+        priority_order = {"High": 0, "Medium": 1, "Low": 2}
+        items.sort(
+            key=lambda item: (
+                priority_order.get(item.priority, 3),
+                item.asset.name.lower()
+            )
+        )
+        sort_by = "priority"
+
+    return render_template(
+        "go_bag.html",
+        items=items,
+        sort_by=sort_by,
+        user=user
+    )
 
 
 @app.route("/assets/<int:asset_id>/go-bag/add", methods=["POST"])
@@ -567,6 +593,31 @@ def add_to_go_bag(asset_id):
 
     return redirect(url_for("assets"))
 
+@app.route("/go-bag/<int:item_id>/update", methods=["POST"])
+def update_go_bag_item(item_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    item = db.session.get(GoBagItem, item_id)
+
+    if item is None:
+        abort(404)
+
+    priority = request.form.get("priority", "").strip()
+    notes = request.form.get("notes", "").strip()
+    return_sort = request.form.get("return_sort", "priority")
+
+    if priority not in {"High", "Medium", "Low"}:
+        abort(400)
+
+    item.priority = priority
+    item.notes = notes or None
+
+    db.session.commit()
+
+    return redirect(url_for("go_bag", sort=return_sort))
 
 @app.route("/go-bag/<int:item_id>/remove", methods=["POST"])
 def remove_from_go_bag(item_id):

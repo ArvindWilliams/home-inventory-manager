@@ -769,3 +769,398 @@ a {
         grid-template-columns: 1fr;
     }
 }
+
+/* ---------- Emergency Go-Bag ---------- */
+
+.gobag-summary {
+    max-width: 760px;
+}
+
+.gobag-panel {
+    border-top: 3px solid #9a6d2c;
+}
+
+.gobag-list {
+    display: grid;
+}
+
+.gobag-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.gobag-item:first-child {
+    padding-top: 0;
+}
+
+.gobag-item:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.gobag-item-main {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    gap: 14px;
+}
+
+.gobag-priority-marker {
+    width: 5px;
+    flex: 0 0 5px;
+    border-radius: 5px;
+    background: var(--border);
+}
+
+.gobag-record {
+    flex: 1;
+    min-width: 0;
+}
+
+.gobag-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.gobag-title-row h3 {
+    margin: 0 0 3px;
+    font-size: 1rem;
+}
+
+.gobag-location {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.priority-high {
+    background: #f7e6e2;
+    color: #8a3c32;
+}
+
+.gobag-priority-marker.priority-high {
+    background: #a34e40;
+}
+
+.priority-medium {
+    background: #f8f0df;
+    color: #8a6628;
+}
+
+.gobag-priority-marker.priority-medium {
+    background: #a57931;
+}
+
+.priority-low {
+    background: #eaf1ec;
+    color: var(--success);
+}
+
+.gobag-priority-marker.priority-low {
+    background: var(--success);
+}
+
+.gobag-note {
+    margin-top: 14px;
+}
+
+.gobag-note p {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+}
+
+.gobag-guidance {
+    margin-top: 24px;
+    padding: 16px 18px;
+    border-left: 4px solid #9a6d2c;
+    background: #f7f2e8;
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.gobag-guidance strong {
+    font-size: 0.88rem;
+}
+
+.gobag-guidance p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.gobag-empty {
+    border-top: 3px solid #9a6d2c;
+}
+
+@media (max-width: 650px) {
+
+    .gobag-item,
+    .gobag-title-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .gobag-item form {
+        align-self: flex-start;
+    }
+}
+
+.gobag-toolbar {
+    align-items: flex-end;
+}
+
+.sort-field {
+    min-width: 150px;
+}
+
+.gobag-editor {
+    margin-top: 14px;
+}
+
+.gobag-editor .form-grid {
+    margin-top: 16px;
+}
+
+.gobag-guidance {
+    border-left: 0;
+    border-radius: var(--radius);
+}
+
+/* ---------- Shared compact record rows ---------- */
+
+.record-table {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.record-table-header,
+.record-row-main {
+    display: grid;
+    align-items: center;
+    gap: 18px;
+}
+
+.gobag-record-grid {
+    grid-template-columns:
+        minmax(150px, 1.2fr) minmax(120px, 1fr) 100px minmax(200px, 2fr) 130px;
+}
+
+.record-table-header {
+    padding: 10px 16px;
+    background: var(--surface-alt);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.record-row {
+    border-bottom: 1px solid var(--border);
+}
+
+.record-row:last-child {
+    border-bottom: 0;
+}
+
+.record-row-main {
+    padding: 15px 16px;
+}
+
+.record-primary strong {
+    font-size: 0.92rem;
+}
+
+.record-note {
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.record-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.record-actions form {
+    margin: 0;
+}
+
+.record-edit-toggle,
+.record-remove {
+    border: 0;
+    background: transparent;
+    padding: 4px 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.record-edit-toggle {
+    color: var(--accent);
+}
+
+.record-remove {
+    color: var(--danger);
+}
+
+.record-inline-editor {
+    border-top: 1px solid var(--border);
+    background: #fafbf9;
+    padding: 0 16px;
+}
+
+.record-inline-editor>summary {
+    display: none;
+}
+
+.record-inline-editor[open] {
+    padding: 18px 16px;
+}
+
+@media (max-width: 800px) {
+    .record-table-header {
+        display: none;
+    }
+
+    .gobag-record-grid {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .record-actions {
+        justify-content: flex-start;
+    }
+}
+
+/* ---------- Compact page summaries ---------- */
+
+.summary-strip {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.summary-strip-item {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    padding: 11px 18px;
+    border-right: 1px solid var(--border);
+}
+
+.summary-strip-item:last-child {
+    border-right: 0;
+}
+
+.summary-strip-item strong {
+    color: var(--accent);
+    font-size: 1.05rem;
+}
+
+.summary-strip-item span {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.toolbar-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.toolbar-add {
+    white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+    .summary-strip {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .summary-strip-item {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .summary-strip-item:last-child {
+        border-bottom: 0;
+    }
+
+    .gobag-toolbar,
+    .toolbar-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
+/* ---------- Compact insurance records ---------- */
+
+.insurance-toolbar {
+    align-items: flex-end;
+}
+
+.insurance-record-grid {
+    grid-template-columns:
+        minmax(135px, 1.15fr) minmax(110px, 1fr) minmax(110px, 1fr) 105px minmax(140px, 1.35fr) 105px 115px;
+}
+
+.record-primary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.record-primary small {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 400;
+}
+
+.insurance-add-panel>summary {
+    display: none;
+}
+
+.insurance-add-panel[open] {
+    display: block;
+}
+
+@media (max-width: 950px) {
+    .insurance-record-grid {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .insurance-record-grid.record-table-header {
+        display: none;
+    }
+}
+
+.insurance-add-panel:not([open]) {
+    display: none;
+}
