@@ -74,9 +74,11 @@ def logout():
 
 @app.route("/dashboard")
 def dashboard():
-    if "user_id" not in session:
+    user = get_current_user()
+    if user is None:
         return redirect(url_for("login"))
-    return "Welcome to the dashboard"
+
+    return render_template("dashboard.html", user=user)
 
 @app.route("/admin")
 def admin():

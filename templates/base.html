@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Home Inventory Manager{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <header class="app-header">
+        <div class="header-inner">
+            <a class="brand" href="{{ url_for('dashboard') }}">
+                <strong>Home Inventory Manager</strong>
+                <span>Household records and asset control</span>
+            </a>
+
+            {% if user %}
+            <nav class="main-nav">
+                <a href="{{ url_for('dashboard') }}">Home</a>
+                <a href="{{ url_for('assets') }}">Assets</a>
+                <a href="{{ url_for('loan_history') }}">Lending</a>
+                <a href="{{ url_for('go_bag') }}">Go-Bag</a>
+                <a href="{{ url_for('insurance_records') }}">Insurance</a>
+
+                {% if user.role == "Administrator" %}
+                <a href="{{ url_for('categories') }}">Categories</a>
+                <a href="{{ url_for('locations') }}">Locations</a>
+                {% endif %}
+            </nav>
+
+            <div class="user-panel">
+                <span class="role-label">{{ user.username }} · {{ user.role }}</span>
+                <a class="logout-link" href="{{ url_for('logout') }}">Log out</a>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="page-shell">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
