@@ -596,7 +596,22 @@ def insurance_records():
         db.select(Asset).order_by(Asset.name)
     ).scalars().all()
 
-    return render_template("insurance.html", assets=asset_list, user=user)
+    insured_assets = [
+        asset for asset in asset_list
+        if asset.insurance_record is not None
+    ]
+
+    uninsured_assets = [
+        asset for asset in asset_list
+        if asset.insurance_record is None
+    ]
+
+    return render_template(
+        "insurance.html",
+        insured_assets=insured_assets,
+        uninsured_assets=uninsured_assets,
+        user=user
+    )
 
 
 @app.route("/assets/<int:asset_id>/insurance", methods=["POST"])
@@ -642,6 +657,27 @@ def save_insurance_record(asset_id):
 
     return redirect(url_for("insurance_records"))
 
+@app.route("/assets/<int:asset_id>/insurance/delete", methods=["POST"])
+def delete_insurance_record(asset_id):
+    user = get_current_user()
+
+    if user is None:
+        return redirect(url_for("login"))
+
+    asset = db.session.get(Asset, asset_id)
+
+    if asset is None:
+        abort(404)
+
+    insurance_record = asset.insurance_record
+
+    if insurance_record is None:
+        abort(404)
+
+    db.session.delete(insurance_record)
+    db.session.commit()
+
+    return redirect(url_for("insurance_records"))
 
 @app.route("/assets/<int:asset_id>/lend", methods=["POST"])
 def lend_asset(asset_id):

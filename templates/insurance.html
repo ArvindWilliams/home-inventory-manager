@@ -1,49 +1,223 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Insurance Records | Home Inventory Manager</title>
-</head>
+{% block title %}Insurance | Home Inventory Manager{% endblock %}
 
-<body>
-    <h1>Insurance Evidence & Claim Readiness</h1>
-    <p><a href="{{ url_for('assets') }}">Back to Assets</a></p>
+{% block content %}
+<div class="page-heading">
+    <h1>Insurance & Claim Readiness</h1>
+    <p>Maintain insurance evidence for household assets and identify records ready to support a claim.</p>
+</div>
 
-    {% if assets %}
-    <ul>
-        {% for asset in assets %}
-        {% set insurance = asset.insurance_record %}
-        <li>
-            <h2>{{ asset.name }}</h2>
-            <p>Category: {{ asset.category.name }} | Location: {{ asset.location.name }} | Status: {{ asset.status }}</p>
+<div class="summary-grid">
+    <div class="summary-card">
+        <span class="summary-value">{{ insured_assets|length }}</span>
+        <span class="summary-label">Insured assets</span>
+    </div>
 
-            <form method="POST" action="{{ url_for('save_insurance_record', asset_id=asset.id) }}">
-                <label for="provider_{{ asset.id }}">Insurance provider</label>
-                <input type="text" id="provider_{{ asset.id }}" name="provider" value="{{ insurance.provider if insurance and insurance.provider else '' }}">
+    <div class="summary-card">
+        <span class="summary-value">
+            {{ insured_assets|selectattr('insurance_record.claim_ready')|list|length }}
+        </span>
+        <span class="summary-label">Claim ready</span>
+    </div>
 
-                <label for="policy_number_{{ asset.id }}">Policy/reference number</label>
-                <input type="text" id="policy_number_{{ asset.id }}" name="policy_number" value="{{ insurance.policy_number if insurance and insurance.policy_number else '' }}">
+    <div class="summary-card">
+        <span class="summary-value">{{ uninsured_assets|length }}</span>
+        <span class="summary-label">Without insurance record</span>
+    </div>
+</div>
 
-                <label for="insured_value_{{ asset.id }}">Insured value</label>
-                <input type="number" id="insured_value_{{ asset.id }}" name="insured_value" min="0" step="0.01" value="{{ insurance.insured_value if insurance and insurance.insured_value is not none else '' }}">
+<div class="section-header">
+    <div>
+        <h2>Insurance records</h2>
+        <p>Assets with insurance information currently recorded.</p>
+    </div>
+</div>
 
-                <label for="evidence_reference_{{ asset.id }}">Evidence reference or note</label>
-                <input type="text" id="evidence_reference_{{ asset.id }}" name="evidence_reference" value="{{ insurance.evidence_reference if insurance and insurance.evidence_reference else '' }}" placeholder="e.g. Receipt stored in household safe">
+{% if insured_assets %}
+<div class="insurance-list">
+    {% for asset in insured_assets %}
+    {% set insurance = asset.insurance_record %}
 
-                <label for="claim_ready_{{ asset.id }}">
-                    <input type="checkbox" id="claim_ready_{{ asset.id }}" name="claim_ready" {% if insurance and insurance.claim_ready %}checked{% endif %}>
-                    Claim ready
+    <article class="insurance-card">
+        <div class="asset-card-header">
+            <div>
+                <h2>{{ asset.name }}</h2>
+                <div class="asset-meta">
+                    <span>{{ asset.category.name }}</span>
+                    <span>{{ asset.location.name }}</span>
+                    <span>{{ asset.status }}</span>
+                </div>
+            </div>
+
+            {% if insurance.claim_ready %}
+            <span class="status-badge status-active">Claim ready</span>
+            {% else %}
+            <span class="status-badge status-missing">Needs review</span>
+            {% endif %}
+        </div>
+
+        <div class="insurance-details">
+            <div class="detail-item">
+                <span class="detail-label">Provider</span>
+                <strong>{{ insurance.provider or "Not recorded" }}</strong>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Policy / reference</span>
+                <strong>{{ insurance.policy_number or "Not recorded" }}</strong>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Insured value</span>
+                <strong>
+                    {% if insurance.insured_value is not none %}
+                    ${{ "%.2f"|format(insurance.insured_value) }}
+                    {% else %}
+                    Not recorded
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Evidence</span>
+                <strong>{{ insurance.evidence_reference or "Not recorded" }}</strong>
+            </div>
+        </div>
+
+        <details class="record-editor">
+            <summary>Edit insurance record</summary>
+
+
+                <form class="form-grid insurance-form" method="POST"
+                    action="{{ url_for('save_insurance_record', asset_id=asset.id) }}">
+
+                    <div class="field">
+                        <label for="provider_{{ asset.id }}">Insurance provider</label>
+                        <input type="text" id="provider_{{ asset.id }}" name="provider"
+                            value="{{ insurance.provider or '' }}" placeholder="Provider name">
+                    </div>
+
+                    <div class="field">
+                        <label for="policy_number_{{ asset.id }}">Policy / reference</label>
+                        <input type="text" id="policy_number_{{ asset.id }}" name="policy_number"
+                            value="{{ insurance.policy_number or '' }}" placeholder="Policy or reference number">
+                    </div>
+
+                    <div class="field">
+                        <label for="insured_value_{{ asset.id }}">Insured value</label>
+                        <input type="number" id="insured_value_{{ asset.id }}" name="insured_value" min="0" step="0.01"
+                            value="{{ insurance.insured_value if insurance.insured_value is not none else '' }}"
+                            placeholder="0.00">
+                    </div>
+
+                    <div class="field">
+                        <label for="evidence_reference_{{ asset.id }}">Evidence reference</label>
+                        <input type="text" id="evidence_reference_{{ asset.id }}" name="evidence_reference"
+                            value="{{ insurance.evidence_reference or '' }}"
+                            placeholder="Receipt, valuation or storage note">
+                    </div>
+
+                    <label class="check-field">
+                        <input type="checkbox" name="claim_ready" {% if insurance.claim_ready %}checked{% endif %}>
+                        <span>
+                            <strong>Claim ready</strong>
+                            <small>Insurance information and evidence have been reviewed.</small>
+                        </span>
+                    </label>
+
+                    <div class="form-actions">
+                        <button class="button button-primary" type="submit">
+                            Save changes
+                        </button>
+                    </div>
+                </form>
+
+                <div class="remove-record">
+                    <form method="POST" action="{{ url_for('delete_insurance_record', asset_id=asset.id) }}"
+                        onsubmit="return confirm('Remove this insurance record? The asset will remain in the inventory.');">
+
+                        <button class="button button-danger" type="submit">
+                            Remove insurance record
+                        </button>
+                    </form>
+                </div>
+            </details>
+
+    </article>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state">
+    <h2>No insurance records yet</h2>
+    <p>Add an insurance record to a household asset when insurance evidence needs to be tracked.</p>
+</div>
+{% endif %}
+
+{% if uninsured_assets %}
+<details class="panel insurance-add-panel">
+    <summary>Add insurance record</summary>
+
+    <div class="panel-heading insurance-add-heading">
+        <div>
+            <h2>Assets without insurance records</h2>
+            <p>Select an asset below to record its insurance information.</p>
+        </div>
+    </div>
+
+    <div class="insurance-create-list">
+        {% for asset in uninsured_assets %}
+        <details class="create-record">
+            <summary>
+                <span>{{ asset.name }}</span>
+                <span class="create-record-meta">
+                    {{ asset.category.name }} · {{ asset.location.name }}
+                </span>
+            </summary>
+
+            <form class="form-grid" method="POST" action="{{ url_for('save_insurance_record', asset_id=asset.id) }}">
+
+                <div class="field">
+                    <label for="new_provider_{{ asset.id }}">Insurance provider</label>
+                    <input type="text" id="new_provider_{{ asset.id }}" name="provider" placeholder="Provider name">
+                </div>
+
+                <div class="field">
+                    <label for="new_policy_{{ asset.id }}">Policy / reference</label>
+                    <input type="text" id="new_policy_{{ asset.id }}" name="policy_number"
+                        placeholder="Policy or reference number">
+                </div>
+
+                <div class="field">
+                    <label for="new_value_{{ asset.id }}">Insured value</label>
+                    <input type="number" id="new_value_{{ asset.id }}" name="insured_value" min="0" step="0.01"
+                        placeholder="0.00">
+                </div>
+
+                <div class="field">
+                    <label for="new_evidence_{{ asset.id }}">Evidence reference</label>
+                    <input type="text" id="new_evidence_{{ asset.id }}" name="evidence_reference"
+                        placeholder="Receipt, valuation or storage note">
+                </div>
+
+                <label class="check-field">
+                    <input type="checkbox" name="claim_ready">
+                    <span>
+                        <strong>Claim ready</strong>
+                        <small>Mark only when the insurance record and evidence have been reviewed.</small>
+                    </span>
                 </label>
 
-                <button type="submit">{% if insurance %}Update Insurance Record{% else %}Save Insurance Record{% endif %}</button>
+                <div class="form-actions">
+                    <button class="button button-primary" type="submit">
+                        Create insurance record
+                    </button>
+                </div>
             </form>
-        </li>
+        </details>
         {% endfor %}
-    </ul>
-    {% else %}
-    <p>No assets are available for insurance records.</p>
-    {% endif %}
-</body>
-
-</html>
+    </div>
+</details>
+{% endif %}
+{% endblock %}
