@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, session, redirect, url_for, a
 from datetime import date
 import csv
 import io
+import os
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -21,7 +22,7 @@ MANUAL_STATUS_TRANSITIONS = {
 }
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "dev-secret-key"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///him.db"
 
 db = SQLAlchemy(app)
