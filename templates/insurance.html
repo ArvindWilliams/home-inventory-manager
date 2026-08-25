@@ -1,49 +1,244 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Insurance Records | Home Inventory Manager</title>
-</head>
+{% block title %}Insurance | Home Inventory Manager{% endblock %}
 
-<body>
-    <h1>Insurance Evidence & Claim Readiness</h1>
-    <p><a href="{{ url_for('assets') }}">Back to Assets</a></p>
+{% block content %}
+<div class="page-heading">
+    <h1>Insurance & Claim Readiness</h1>
+    <p>Maintain insurance evidence for household assets and identify records ready to support a claim.</p>
+</div>
+{% if error %}
+<div class="form-message form-message-error record-page-message" role="alert">
+    {{ error }}
+</div>
+{% endif %}
+<div class="summary-strip">
+    <div class="summary-strip-item">
+        <strong>{{ insured_assets|length }}</strong>
+        <span>Insured assets</span>
+    </div>
 
-    {% if assets %}
-    <ul>
-        {% for asset in assets %}
+    <div class="summary-strip-item">
+        <strong>{{ insured_assets|selectattr('insurance_record.claim_ready')|list|length }}</strong>
+        <span>Claim ready</span>
+    </div>
+
+    <div class="summary-strip-item">
+        <strong>{{ uninsured_assets|length }}</strong>
+        <span>Without insurance record</span>
+    </div>
+</div>
+
+<section class="panel">
+    <div class="panel-heading insurance-toolbar">
+        <div>
+            <h2>Insurance records</h2>
+            <p>Recorded policy, evidence and claim-readiness information.</p>
+        </div>
+
+        {% if uninsured_assets %}
+        <button class="button button-primary" type="button"
+            onclick="document.getElementById('insurance-add-panel').toggleAttribute('open')">
+            Add insurance record
+        </button>
+        {% endif %}
+    </div>
+
+    {% if insured_assets %}
+    <div class="record-table">
+        <div class="record-table-header insurance-record-grid">
+            <span>Asset</span>
+            <span>Provider</span>
+            <span>Policy / Reference</span>
+            <span>Insured value</span>
+            <span>Evidence</span>
+            <span>Claim status</span>
+            <span>Actions</span>
+        </div>
+
+        {% for asset in insured_assets %}
         {% set insurance = asset.insurance_record %}
-        <li>
-            <h2>{{ asset.name }}</h2>
-            <p>Category: {{ asset.category.name }} | Location: {{ asset.location.name }} | Status: {{ asset.status }}</p>
 
-            <form method="POST" action="{{ url_for('save_insurance_record', asset_id=asset.id) }}">
-                <label for="provider_{{ asset.id }}">Insurance provider</label>
-                <input type="text" id="provider_{{ asset.id }}" name="provider" value="{{ insurance.provider if insurance and insurance.provider else '' }}">
+        <article class="record-row">
+            <div class="record-row-main insurance-record-grid">
+                <div class="record-primary">
+                    <strong>{{ asset.name }}</strong>
+                    <small>{{ asset.category.name }} · {{ asset.location.name }}</small>
+                </div>
 
-                <label for="policy_number_{{ asset.id }}">Policy/reference number</label>
-                <input type="text" id="policy_number_{{ asset.id }}" name="policy_number" value="{{ insurance.policy_number if insurance and insurance.policy_number else '' }}">
+                <div>{{ insurance.provider or "Not recorded" }}</div>
 
-                <label for="insured_value_{{ asset.id }}">Insured value</label>
-                <input type="number" id="insured_value_{{ asset.id }}" name="insured_value" min="0" step="0.01" value="{{ insurance.insured_value if insurance and insurance.insured_value is not none else '' }}">
+                <div>{{ insurance.policy_number or "Not recorded" }}</div>
 
-                <label for="evidence_reference_{{ asset.id }}">Evidence reference or note</label>
-                <input type="text" id="evidence_reference_{{ asset.id }}" name="evidence_reference" value="{{ insurance.evidence_reference if insurance and insurance.evidence_reference else '' }}" placeholder="e.g. Receipt stored in household safe">
+                <div>
+                    {% if insurance.insured_value is not none %}
+                    ${{ "%.2f"|format(insurance.insured_value) }}
+                    {% else %}
+                    <span class="record-note">Not recorded</span>
+                    {% endif %}
+                </div>
 
-                <label for="claim_ready_{{ asset.id }}">
-                    <input type="checkbox" id="claim_ready_{{ asset.id }}" name="claim_ready" {% if insurance and insurance.claim_ready %}checked{% endif %}>
-                    Claim ready
+                <div class="record-note">
+                    {{ insurance.evidence_reference or "Not recorded" }}
+                </div>
+
+                <div>
+                    {% if insurance.claim_ready %}
+                    <span class="status-badge status-active">Claim ready</span>
+                    {% else %}
+                    <span class="status-badge status-missing">Needs review</span>
+                    {% endif %}
+                </div>
+
+                <div class="record-actions">
+                    <button class="record-edit-toggle" type="button"
+                        onclick="document.getElementById('insurance-edit-{{ asset.id }}').toggleAttribute('open')">
+                        Edit
+                    </button>
+
+                    <form method="POST" action="{{ url_for('delete_insurance_record', asset_id=asset.id) }}"
+                        onsubmit="return confirm('Remove this insurance record? The asset will remain in the inventory.');">
+                        <button class="record-remove" type="submit">
+                            Remove
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <details class="record-inline-editor" id="insurance-edit-{{ asset.id }}">
+                <summary>Edit {{ asset.name }}</summary>
+
+                <form class="form-grid" method="POST"
+                    action="{{ url_for('save_insurance_record', asset_id=asset.id) }}">
+                    <div class="field">
+                        <label for="provider_{{ asset.id }}">Insurance provider</label>
+                        <input type="text" id="provider_{{ asset.id }}" name="provider"
+                            value="{{ insurance.provider or '' }}" placeholder="Provider name">
+                    </div>
+
+                    <div class="field">
+                        <label for="policy_number_{{ asset.id }}">Policy / reference</label>
+                        <input type="text" id="policy_number_{{ asset.id }}" name="policy_number"
+                            value="{{ insurance.policy_number or '' }}" placeholder="Policy or reference number">
+                    </div>
+
+                    <div class="field">
+                        <label for="insured_value_{{ asset.id }}">Insured value</label>
+                        <input type="number" id="insured_value_{{ asset.id }}" name="insured_value" min="0" step="0.01"
+                            value="{{ insurance.insured_value if insurance.insured_value is not none else '' }}"
+                            placeholder="0.00">
+                    </div>
+
+                    <div class="field">
+                        <label for="evidence_reference_{{ asset.id }}">Evidence reference</label>
+                        <input type="text" id="evidence_reference_{{ asset.id }}" name="evidence_reference"
+                            value="{{ insurance.evidence_reference or '' }}"
+                            placeholder="Receipt, valuation or storage note">
+                    </div>
+
+                    <label class="check-field">
+                        <input type="checkbox" name="claim_ready" {% if insurance.claim_ready %}checked{% endif %}>
+                        <span>
+                            <strong>Claim ready</strong>
+                            <small>Insurance information and evidence have been reviewed.</small>
+                        </span>
+                    </label>
+
+                    <div class="form-actions">
+                        <button class="button button-primary" type="submit">
+                            Save changes
+                        </button>
+
+                        <button class="button button-secondary" type="button" onclick="
+                                this.form.reset();
+                                document.getElementById('insurance-edit-{{ asset.id }}').removeAttribute('open');
+                            ">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </details>
+        </article>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <h2>No insurance records yet</h2>
+        <p>Add an insurance record when an asset's policy or evidence needs to be tracked.</p>
+    </div>
+    {% endif %}
+</section>
+
+{% if uninsured_assets %}
+<details class="panel insurance-add-panel" id="insurance-add-panel">
+    <summary>Add insurance record</summary>
+
+    <div class="panel-heading insurance-add-heading">
+        <div>
+            <h2>Assets without insurance records</h2>
+            <p>Select an asset and enter its insurance information.</p>
+        </div>
+    </div>
+
+    <div class="insurance-create-list">
+        {% for asset in uninsured_assets %}
+        <details class="create-record" id="insurance-create-{{ asset.id }}">
+            <summary>
+                <span>{{ asset.name }}</span>
+                <span class="create-record-meta">
+                    {{ asset.category.name }} · {{ asset.location.name }}
+                </span>
+            </summary>
+
+            <form class="form-grid" method="POST" action="{{ url_for('save_insurance_record', asset_id=asset.id) }}">
+                <div class="field">
+                    <label for="new_provider_{{ asset.id }}">Insurance provider</label>
+                    <input type="text" id="new_provider_{{ asset.id }}" name="provider" placeholder="Provider name">
+                </div>
+
+                <div class="field">
+                    <label for="new_policy_{{ asset.id }}">Policy / reference</label>
+                    <input type="text" id="new_policy_{{ asset.id }}" name="policy_number"
+                        placeholder="Policy or reference number">
+                </div>
+
+                <div class="field">
+                    <label for="new_value_{{ asset.id }}">Insured value</label>
+                    <input type="number" id="new_value_{{ asset.id }}" name="insured_value" min="0" step="0.01"
+                        placeholder="0.00">
+                </div>
+
+                <div class="field">
+                    <label for="new_evidence_{{ asset.id }}">Evidence reference</label>
+                    <input type="text" id="new_evidence_{{ asset.id }}" name="evidence_reference"
+                        placeholder="Receipt, valuation or storage note">
+                </div>
+
+                <label class="check-field">
+                    <input type="checkbox" name="claim_ready">
+                    <span>
+                        <strong>Claim ready</strong>
+                        <small>Mark only when the insurance record and evidence have been reviewed.</small>
+                    </span>
                 </label>
 
-                <button type="submit">{% if insurance %}Update Insurance Record{% else %}Save Insurance Record{% endif %}</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No assets are available for insurance records.</p>
-    {% endif %}
-</body>
+                <div class="form-actions">
+                    <button class="button button-primary" type="submit">
+                        Create record
+                    </button>
 
-</html>
+                    <button class="button button-secondary" type="button" onclick="
+                            this.form.reset();
+                            document.getElementById('insurance-create-{{ asset.id }}').removeAttribute('open');
+                        ">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </details>
+        {% endfor %}
+    </div>
+</details>
+{% endif %}
+{% endblock %}

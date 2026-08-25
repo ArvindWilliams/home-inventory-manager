@@ -1,44 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Locations | Home Inventory Manager</title>
-</head>
+{% block title %}Locations | Home Inventory Manager{% endblock %}
 
-<body>
-
+{% block content %}
+<div class="page-heading">
     <h1>Locations</h1>
+    <p>Maintain the household places used to track where assets are stored.</p>
+</div>
 
-    <ul>
+{% if error %}
+<div class="form-message form-message-error record-page-message">
+    {{ error }}
+</div>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-heading admin-record-toolbar">
+        <div>
+            <h2>Location records</h2>
+            <p>{{ locations|length }} location{% if locations|length != 1 %}s{% endif %} available.</p>
+        </div>
+        {% if user.role == "Administrator" %}
+        <button class="button button-primary" type="button"
+            onclick="document.getElementById('location-add-panel').toggleAttribute('open')">Add location</button>
+        {% endif %}
+    </div>
+
+    {% if locations %}
+    <div class="record-table">
+        <div class="record-table-header admin-record-grid">
+            <span>Location</span>
+            <span>Assets</span>
+            <span>Actions</span>
+        </div>
+
         {% for location in locations %}
-        <li>
-            {{ location.name }}
+        {% set asset_count = location_asset_counts.get(location.id, 0) %}
+        <article class="record-row">
+            <div class="record-row-main admin-record-grid">
+                <div class="record-primary"><strong>{{ location.name }}</strong></div>
+                <div>
+                    {% if asset_count %}
+                    <span class="usage-count"><strong>{{ asset_count }}</strong> asset{% if asset_count != 1 %}s{% endif %}</span>
+                    {% else %}
+                    <span class="record-note">Unused</span>
+                    {% endif %}
+                </div>
+                <div class="record-actions">
+                    {% if user.role == "Administrator" %}
+                    <button class="record-edit-toggle" type="button"
+                        onclick="document.getElementById('location-edit-{{ location.id }}').toggleAttribute('open')">Edit</button>
+                    {% if asset_count == 0 %}
+                    <form method="POST" action="{{ url_for('delete_location', location_id=location.id) }}"
+                        onsubmit="return confirm('Delete this unused location?');">
+                        <button class="record-remove" type="submit">Delete</button>
+                    </form>
+                    {% else %}
+                    <span class="record-action-disabled" title="Move assigned assets before deleting this location">In use</span>
+                    {% endif %}
+                    {% else %}
+                    <span class="record-note">View only</span>
+                    {% endif %}
+                </div>
+            </div>
 
             {% if user.role == "Administrator" %}
-            <form method="POST" action="{{ url_for('update_location', location_id=location.id) }}"
-                style="display:inline;">
-                <input type="text" name="name" value="{{ location.name }}" required>
-                <button type="submit">Update</button>
-            </form>
-
-            <form method="POST" action="{{ url_for('delete_location', location_id=location.id) }}"
-                style="display:inline;">
-                <button type="submit">Delete</button>
-            </form>
+            <details class="record-inline-editor" id="location-edit-{{ location.id }}">
+                <summary>Edit {{ location.name }}</summary>
+                <form class="inline-single-form" method="POST" action="{{ url_for('update_location', location_id=location.id) }}">
+                    <div class="field">
+                        <label for="location_name_{{ location.id }}">Location name</label>
+                        <input type="text" id="location_name_{{ location.id }}" name="name" value="{{ location.name }}" required>
+                    </div>
+                    <div class="form-actions">
+                        <button class="button button-primary" type="submit">Save changes</button>
+                        <button class="button button-secondary" type="button"
+                            onclick="this.form.reset(); document.getElementById('location-edit-{{ location.id }}').removeAttribute('open');">Cancel</button>
+                    </div>
+                </form>
+            </details>
             {% endif %}
-        </li>
+        </article>
         {% endfor %}
-    </ul>
-
-    {% if user.role == "Administrator" %}
-    <form method="POST" action="{{ url_for('add_location') }}">
-        <label for="name">New location</label>
-        <input type="text" id="name" name="name" required>
-        <button type="submit">Add Location</button>
-    </form>
+    </div>
+    {% else %}
+    <div class="empty-state"><h2>No locations</h2><p>Add a location before assigning household assets.</p></div>
     {% endif %}
+</section>
 
-</body>
-
-</html>
+{% if user.role == "Administrator" %}
+<details class="panel add-record-panel" id="location-add-panel">
+    <summary>Add location</summary>
+    <div class="panel-heading add-record-heading">
+        <div><h2>Add location</h2><p>Create a new place for tracking household asset storage.</p></div>
+    </div>
+    <form class="inline-single-form" method="POST" action="{{ url_for('add_location') }}">
+        <div class="field">
+            <label for="location_name">Location name</label>
+            <input type="text" id="location_name" name="name" required>
+        </div>
+        <div class="form-actions">
+            <button class="button button-primary" type="submit">Add location</button>
+            <button class="button button-secondary" type="button"
+                onclick="this.form.reset(); document.getElementById('location-add-panel').removeAttribute('open');">Cancel</button>
+        </div>
+    </form>
+</details>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Home Inventory Manager{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <h1>Household Overview</h1>
+    <p>Manage household assets, movements, emergency items and insurance records.</p>
+</div>
+
+<div class="dashboard-grid">
+    <a class="dashboard-card" href="{{ url_for('assets') }}">
+        <h2>Inventory</h2>
+        <p>View, search and manage household assets and their current status.</p>
+    </a>
+
+    <a class="dashboard-card" href="{{ url_for('loan_history') }}">
+        <h2>Lending & Returns</h2>
+        <p>Review assets currently lent and retained lending history.</p>
+    </a>
+
+    <a class="dashboard-card" href="{{ url_for('go_bag') }}">
+        <h2>Emergency Go-Bag</h2>
+        <p>Maintain the household's priority items for emergency access.</p>
+    </a>
+
+    <a class="dashboard-card" href="{{ url_for('insurance_records') }}">
+        <h2>Insurance Records</h2>
+        <p>Review insurance evidence and claim-readiness information.</p>
+    </a>
+
+    {% if user.role == "Administrator" %}
+    <a class="dashboard-card" href="{{ url_for('categories') }}">
+        <h2>Categories</h2>
+        <p>Maintain the categories used to organise household assets.</p>
+    </a>
+
+    <a class="dashboard-card" href="{{ url_for('locations') }}">
+        <h2>Locations</h2>
+        <p>Maintain storage locations and support asset movement tracking.</p>
+    </a>
+    {% endif %}
+</div>
+
+{% if user.role == "Administrator" %}
+<div class="section-label">Administrator reporting</div>
+
+<a class="dashboard-card" href="{{ url_for('export_inventory_csv') }}">
+    <h2>Export Inventory</h2>
+    <p>Download the current household inventory as a CSV report.</p>
+</a>
+{% endif %}
+{% endblock %}

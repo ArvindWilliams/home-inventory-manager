@@ -1,41 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Loan History | Home Inventory Manager</title>
-</head>
+{% block title %}Lending | Home Inventory Manager{% endblock %}
 
-<body>
-    <h1>Loan History</h1>
-    <p><a href="{{ url_for('assets') }}">Back to Assets</a></p>
+{% block content %}
+<div class="page-heading">
+    <h1>Lending & Returns</h1>
+    <p>Review active loans and retained household lending history.</p>
+</div>
+
+{% if loans %}
+<div class="summary-strip">
+    <div class="summary-strip-item">
+        <strong>{{ loans|length }}</strong>
+        <span>Total records</span>
+    </div>
+    <div class="summary-strip-item">
+        <strong>{{ loans|selectattr('returned_date', 'none')|list|length }}</strong>
+        <span>Active loans</span>
+    </div>
+    <div class="summary-strip-item">
+        <strong>{{ loans|rejectattr('returned_date', 'none')|list|length }}</strong>
+        <span>Returned</span>
+    </div>
+</div>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-heading lending-toolbar">
+        <div>
+            <h2>Loan records</h2>
+            <p>Current and completed loans are retained as household history.</p>
+        </div>
+        <a class="button button-primary" href="{{ url_for('assets') }}">Lend an asset</a>
+    </div>
 
     {% if loans %}
-    <table>
-        <thead>
-            <tr>
-                <th>Asset</th>
-                <th>Borrower</th>
-                <th>Lent</th>
-                <th>Due</th>
-                <th>Returned</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for loan in loans %}
-            <tr>
-                <td>{{ loan.asset.name }}</td>
-                <td>{{ loan.borrower_name }}</td>
-                <td>{{ loan.lent_date }}</td>
-                <td>{{ loan.due_date or '-' }}</td>
-                <td>{{ loan.returned_date or 'Active loan' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No lending history is available.</p>
-    {% endif %}
-</body>
+    <div class="record-table">
+        <div class="record-table-header loan-record-grid">
+            <span>Asset</span>
+            <span>Borrower</span>
+            <span>Lent</span>
+            <span>Expected return</span>
+            <span>Status</span>
+            <span>Action</span>
+        </div>
 
-</html>
+        {% for loan in loans %}
+        <article class="record-row">
+            <div class="record-row-main loan-record-grid">
+                <div class="record-primary"><strong>{{ loan.asset.name }}</strong></div>
+                <div>{{ loan.borrower_name }}</div>
+                <div>{{ loan.lent_date }}</div>
+                <div>{{ loan.due_date or "Not set" }}</div>
+                <div>
+                    {% if loan.returned_date %}
+                    <span class="status-badge status-active">Returned {{ loan.returned_date }}</span>
+                    {% else %}
+                    <span class="status-badge status-lent">Active loan</span>
+                    {% endif %}
+                </div>
+                <div class="record-actions">
+                    {% if not loan.returned_date %}
+                    <form method="POST" action="{{ url_for('return_asset', loan_id=loan.id) }}"
+                        onsubmit="return confirm('Record this asset as returned?');">
+                        <button class="record-edit-toggle" type="submit">Return</button>
+                    </form>
+                    {% else %}
+                    <span class="record-note">Complete</span>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>No lending history</h2>
+        <p>Lending records will appear here after an asset is lent from the inventory.</p>
+        <a class="button button-primary" href="{{ url_for('assets') }}">View inventory</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

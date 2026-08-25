@@ -1,23 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Login | Home Inventory Manager</title>
-</head>
+{% block title %}Sign in | Home Inventory Manager{% endblock %}
 
-<body>
-    <h1>Home Inventory Manager</h1>
+{% block content %}
+<div class="login-shell">
+    <section class="login-intro">
+        <span class="login-kicker">Household records</span>
+        <h1>Know what you own and where it is.</h1>
+        <p>Keep household assets, lending, emergency items and insurance evidence in one practical record.</p>
+        <div class="login-feature-list">
+            <span>Inventory & locations</span>
+            <span>Lending history</span>
+            <span>Emergency Go-Bag</span>
+            <span>Insurance readiness</span>
+        </div>
+    </section>
 
-    <form method="POST">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" required>
+    <section class="login-panel">
+        <div class="login-panel-heading">
+            <h2>Sign in</h2>
+            <p>Access your household inventory.</p>
+        </div>
 
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
+        {% if login_error %}
+        <div class="form-message form-message-error" role="alert">
+            Username or password was not recognised. Please try again.
+        </div>
+        {% endif %}
 
-        <button type="submit">Login</button>
-    </form>
-</body>
-
-</html>
+        <form class="login-form" method="POST">
+            <div class="field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
+            </div>
+            <button class="button button-primary login-button" type="submit">Sign in</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

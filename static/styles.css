@@ -1,0 +1,1432 @@
+:root {
+    --bg: #f4f6f3;
+    --surface: #ffffff;
+    --surface-alt: #eef2ed;
+    --text: #24302a;
+    --muted: #657069;
+    --border: #d9e0da;
+    --accent: #355f4a;
+    --accent-dark: #284938;
+    --danger: #9f3d3d;
+    --warning: #956b24;
+    --success: #39734f;
+    --radius: 10px;
+    --shadow: 0 2px 10px rgba(31, 43, 36, 0.07);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+a {
+    color: var(--accent);
+}
+
+.app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.brand {
+    text-decoration: none;
+    color: var(--text);
+}
+
+.brand strong {
+    display: block;
+    font-size: 1.2rem;
+}
+
+.brand span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.main-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+}
+
+.main-nav a {
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.main-nav a:hover {
+    text-decoration: underline;
+}
+
+.user-panel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+}
+
+.role-label {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.logout-link {
+    font-size: 0.88rem;
+}
+
+.page-shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+}
+
+.page-heading {
+    margin-bottom: 24px;
+}
+
+.page-heading h1 {
+    margin: 0 0 5px;
+    font-size: 1.85rem;
+}
+
+.page-heading p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.dashboard-card {
+    display: block;
+    padding: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.dashboard-card:hover {
+    border-color: var(--accent);
+}
+
+.dashboard-card h2 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+}
+
+.dashboard-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.section-label {
+    margin: 32px 0 14px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 850px) {
+    .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- Inventory workspace ---------- */
+
+.page-heading-row,
+.section-header,
+.panel-heading,
+.asset-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+    margin-bottom: 28px;
+}
+
+.panel-heading {
+    margin-bottom: 18px;
+}
+
+.panel-heading h2,
+.section-header h2 {
+    margin: 0 0 4px;
+    font-size: 1.08rem;
+}
+
+.panel-heading p,
+.section-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.section-header {
+    margin: 34px 0 14px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 14px;
+    align-items: end;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.field input,
+.field select {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+    font: inherit;
+}
+
+.field input:focus,
+.field select:focus {
+    outline: 2px solid rgba(53, 95, 74, 0.18);
+    border-color: var(--accent);
+}
+
+.filter-actions,
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 39px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    text-decoration: none;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.84rem;
+    cursor: pointer;
+}
+
+.button-primary {
+    background: var(--accent);
+    color: #fff;
+}
+
+.button-primary:hover {
+    background: var(--accent-dark);
+}
+
+.button-secondary {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.button-secondary:hover {
+    border-color: var(--accent);
+}
+
+.button-danger {
+    background: transparent;
+    border-color: #d9aaaa;
+    color: var(--danger);
+}
+
+.text-link {
+    color: var(--accent);
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.asset-list {
+    display: grid;
+    gap: 14px;
+}
+
+.asset-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.asset-card-header h2 {
+    margin: 0 0 5px;
+    font-size: 1.12rem;
+}
+
+.asset-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.asset-meta span+span::before {
+    content: "•";
+    margin-right: 8px;
+}
+
+.asset-description {
+    margin: 14px 0;
+    color: var(--muted);
+}
+
+.status-badge,
+.record-indicator {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    background: var(--surface-alt);
+}
+
+.status-active {
+    color: var(--success);
+    background: #eaf4ed;
+}
+
+.status-missing {
+    color: var(--warning);
+    background: #f8f0df;
+}
+
+.status-lent {
+    color: #4a6287;
+    background: #e9eef6;
+}
+
+.status-disposed {
+    color: var(--muted);
+    background: #ecefed;
+}
+
+.record-indicators {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 14px;
+}
+
+.record-indicator {
+    padding: 4px 9px;
+    background: var(--surface-alt);
+    color: var(--muted);
+}
+
+.record-positive {
+    background: #eaf4ed;
+    color: var(--success);
+}
+
+.asset-actions {
+    margin-top: 18px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+}
+
+.asset-actions summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.88rem;
+}
+
+.action-section {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.action-section:last-child {
+    border-bottom: 0;
+}
+
+.action-section h3 {
+    margin: 0 0 14px;
+    font-size: 0.94rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    align-items: end;
+}
+
+.field-wide {
+    grid-column: span 2;
+}
+
+.form-actions {
+    grid-column: span 2;
+}
+
+.action-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 18px;
+}
+
+.compact-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.current-loan {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 14px;
+    background: var(--surface-alt);
+    border-radius: 7px;
+}
+
+.current-loan p {
+    margin: 0;
+}
+
+.muted-note {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.danger-zone p {
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 42px 24px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+}
+
+.empty-state h2 {
+    margin-top: 0;
+}
+
+.empty-state p {
+    color: var(--muted);
+}
+
+.add-asset-panel {
+    margin-top: 34px;
+}
+
+@media (max-width: 900px) {
+    .filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .field-search {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 650px) {
+
+    .page-heading-row,
+    .section-header,
+    .asset-card-header {
+        flex-direction: column;
+    }
+
+    .filter-grid,
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .field-search,
+    .field-wide,
+    .form-actions {
+        grid-column: span 1;
+    }
+
+    .compact-form,
+    .current-loan {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
+/* ---------- Insurance workspace ---------- */
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+}
+
+.summary-value {
+    display: block;
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.summary-label {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.insurance-list {
+    display: grid;
+    gap: 16px;
+}
+
+.insurance-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.insurance-form {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.check-field {
+    grid-column: span 2;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: var(--surface-alt);
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.check-field input {
+    margin-top: 4px;
+}
+
+.check-field span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.check-field strong {
+    font-size: 0.86rem;
+}
+
+.check-field small {
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.insurance-add-panel {
+    margin-top: 34px;
+}
+
+.insurance-add-panel>summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.insurance-add-heading {
+    margin-top: 22px;
+}
+
+.insurance-create-list {
+    display: grid;
+    gap: 10px;
+}
+
+.create-record {
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+}
+
+.create-record>summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.create-record-meta {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.create-record form {
+    padding: 18px;
+    border-top: 1px solid var(--border);
+}
+
+@media (max-width: 650px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .check-field {
+        grid-column: span 1;
+    }
+
+    .create-record>summary {
+        flex-direction: column;
+    }
+}
+
+.insurance-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 24px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.detail-label {
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.detail-item strong {
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.record-editor {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.record-editor>summary {
+    width: fit-content;
+    cursor: pointer;
+    color: var(--accent);
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+@media (max-width: 650px) {
+    .insurance-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+.insurance-details {
+    display: grid;
+    grid-template-columns: 1.1fr 1.1fr 0.8fr 1.5fr 0.8fr;
+    gap: 20px;
+    margin-top: 18px;
+    padding: 18px 0;
+    border-top: 1px solid var(--border);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.detail-label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.detail-item strong {
+    font-size: 0.9rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.record-editor {
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.record-editor>summary {
+    width: fit-content;
+    cursor: pointer;
+    color: var(--accent);
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.remove-record {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+@media (max-width: 850px) {
+    .insurance-details {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 550px) {
+    .insurance-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- Emergency Go-Bag ---------- */
+
+.gobag-summary {
+    max-width: 760px;
+}
+
+
+
+
+.gobag-list {
+    display: grid;
+}
+
+.gobag-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.gobag-item:first-child {
+    padding-top: 0;
+}
+
+.gobag-item:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.gobag-item-main {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    gap: 14px;
+}
+
+.gobag-priority-marker {
+    width: 5px;
+    flex: 0 0 5px;
+    border-radius: 5px;
+    background: var(--border);
+}
+
+.gobag-record {
+    flex: 1;
+    min-width: 0;
+}
+
+.gobag-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.gobag-title-row h3 {
+    margin: 0 0 3px;
+    font-size: 1rem;
+}
+
+.gobag-location {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.priority-high {
+    background: #f7e6e2;
+    color: #8a3c32;
+}
+
+.gobag-priority-marker.priority-high {
+    background: #a34e40;
+}
+
+.priority-medium {
+    background: #f8f0df;
+    color: #8a6628;
+}
+
+.gobag-priority-marker.priority-medium {
+    background: #a57931;
+}
+
+.priority-low {
+    background: #eaf1ec;
+    color: var(--success);
+}
+
+.gobag-priority-marker.priority-low {
+    background: var(--success);
+}
+
+.gobag-note {
+    margin-top: 14px;
+}
+
+.gobag-note p {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+}
+
+.gobag-guidance {
+    margin-top: 24px;
+    padding: 16px 18px;
+    border-left: 4px solid #9a6d2c;
+    background: #f7f2e8;
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.gobag-guidance strong {
+    font-size: 0.88rem;
+}
+
+.gobag-guidance p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.gobag-empty {
+    border-top: 3px solid #9a6d2c;
+}
+
+@media (max-width: 650px) {
+
+    .gobag-item,
+    .gobag-title-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .gobag-item form {
+        align-self: flex-start;
+    }
+}
+
+.gobag-toolbar {
+    align-items: flex-end;
+}
+
+.sort-field {
+    min-width: 150px;
+}
+
+.gobag-editor {
+    margin-top: 14px;
+}
+
+.gobag-editor .form-grid {
+    margin-top: 16px;
+}
+
+.gobag-guidance {
+    border-left: 0;
+    border-radius: var(--radius);
+}
+
+/* ---------- Shared compact record rows ---------- */
+
+.record-table {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.record-table-header,
+.record-row-main {
+    display: grid;
+    align-items: center;
+    gap: 18px;
+}
+
+.gobag-record-grid {
+    grid-template-columns:
+        minmax(150px, 1.2fr) minmax(120px, 1fr) 100px minmax(200px, 2fr) 130px;
+}
+
+.record-table-header {
+    padding: 10px 16px;
+    background: var(--surface-alt);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.record-row {
+    border-bottom: 1px solid var(--border);
+}
+
+.record-row:last-child {
+    border-bottom: 0;
+}
+
+.record-row-main {
+    padding: 15px 16px;
+}
+
+.record-primary strong {
+    font-size: 0.92rem;
+}
+
+.record-note {
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.record-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.record-actions form {
+    margin: 0;
+}
+
+.record-edit-toggle,
+.record-remove {
+    border: 0;
+    background: transparent;
+    padding: 4px 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.record-edit-toggle {
+    color: var(--accent);
+}
+
+.record-remove {
+    color: var(--danger);
+}
+
+.record-inline-editor {
+    border-top: 1px solid var(--border);
+    background: #fafbf9;
+    padding: 0 16px;
+}
+
+.record-inline-editor>summary {
+    display: none;
+}
+
+.record-inline-editor[open] {
+    padding: 18px 16px;
+}
+
+@media (max-width: 800px) {
+    .record-table-header {
+        display: none;
+    }
+
+    .gobag-record-grid {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .record-actions {
+        justify-content: flex-start;
+    }
+}
+
+/* ---------- Compact page summaries ---------- */
+
+.summary-strip {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.summary-strip-item {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    padding: 11px 18px;
+    border-right: 1px solid var(--border);
+}
+
+.summary-strip-item:last-child {
+    border-right: 0;
+}
+
+.summary-strip-item strong {
+    color: var(--accent);
+    font-size: 1.05rem;
+}
+
+.summary-strip-item span {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.toolbar-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.toolbar-add {
+    white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+    .summary-strip {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .summary-strip-item {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .summary-strip-item:last-child {
+        border-bottom: 0;
+    }
+
+    .gobag-toolbar,
+    .toolbar-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
+/* ---------- Compact insurance records ---------- */
+
+.insurance-toolbar {
+    align-items: flex-end;
+}
+
+.insurance-record-grid {
+    grid-template-columns:
+        minmax(135px, 1.15fr) minmax(110px, 1fr) minmax(110px, 1fr) 105px minmax(140px, 1.35fr) 105px 115px;
+}
+
+.record-primary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.record-primary small {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 400;
+}
+
+.insurance-add-panel>summary {
+    display: none;
+}
+
+.insurance-add-panel[open] {
+    display: block;
+}
+
+@media (max-width: 950px) {
+    .insurance-record-grid {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .insurance-record-grid.record-table-header {
+        display: none;
+    }
+}
+
+.insurance-add-panel:not([open]) {
+    display: none;
+}
+
+/* ---------- Shared record workspace refinements ---------- */
+
+.compact-panel {
+    padding-bottom: 20px;
+}
+
+.inventory-toolbar,
+.lending-toolbar,
+.admin-record-toolbar {
+    align-items: flex-end;
+}
+
+.asset-record-grid {
+    grid-template-columns:
+        minmax(155px, 1.45fr) minmax(105px, 0.9fr) minmax(105px, 0.9fr) 92px 90px 105px 75px;
+}
+
+.loan-record-grid {
+    grid-template-columns:
+        minmax(150px, 1.3fr) minmax(130px, 1fr) 105px 120px minmax(145px, 1.2fr) 75px;
+}
+
+.admin-record-grid {
+    grid-template-columns: minmax(180px, 1.2fr) minmax(180px, 2fr) 120px;
+}
+
+.record-row-main>div:not(.record-primary):not(.record-actions) {
+    font-size: 0.86rem;
+}
+
+.asset-inline-editor {
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+.inline-editor-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 4px;
+}
+
+.inline-editor-heading>div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.inline-editor-heading span {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.first-action-section {
+    padding-top: 16px;
+}
+
+.action-row-between {
+    justify-content: space-between;
+    width: 100%;
+}
+
+.action-row-between p {
+    margin: 0;
+}
+
+.add-record-panel>summary {
+    display: none;
+}
+
+.add-record-panel:not([open]) {
+    display: none;
+}
+
+.add-record-heading {
+    margin-bottom: 18px;
+}
+
+.inline-single-form {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    align-items: end;
+    gap: 14px;
+    max-width: 620px;
+}
+
+/* ---------- Login ---------- */
+
+.login-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+    gap: 56px;
+    align-items: center;
+    min-height: 560px;
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.login-intro {
+    max-width: 560px;
+}
+
+.login-kicker {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.login-intro h1 {
+    margin: 0 0 14px;
+    max-width: 520px;
+    font-size: 2.35rem;
+    line-height: 1.15;
+}
+
+.login-intro>p {
+    margin: 0;
+    max-width: 520px;
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+.login-feature-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.login-feature-list span {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.login-panel {
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.login-panel-heading {
+    margin-bottom: 22px;
+}
+
+.login-panel-heading h2 {
+    margin: 0 0 4px;
+    font-size: 1.3rem;
+}
+
+.login-panel-heading p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.login-form {
+    display: grid;
+    gap: 16px;
+}
+
+.login-button {
+    width: 100%;
+    margin-top: 2px;
+}
+
+.form-message {
+    margin-bottom: 18px;
+    padding: 11px 12px;
+    border-radius: 7px;
+    font-size: 0.84rem;
+}
+
+.form-message-error {
+    border: 1px solid #e4bcbc;
+    background: #faeeee;
+    color: var(--danger);
+}
+
+@media (max-width: 1000px) {
+
+    .asset-record-grid,
+    .loan-record-grid,
+    .admin-record-grid {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .asset-record-grid.record-table-header,
+    .loan-record-grid.record-table-header,
+    .admin-record-grid.record-table-header {
+        display: none;
+    }
+}
+
+@media (max-width: 760px) {
+    .login-shell {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        min-height: 0;
+    }
+
+    .login-intro h1 {
+        font-size: 1.9rem;
+    }
+
+    .inline-single-form {
+        grid-template-columns: 1fr;
+    }
+
+    .inventory-toolbar,
+    .lending-toolbar,
+    .admin-record-toolbar,
+    .inline-editor-heading {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ---------- Record integrity & lifecycle context ---------- */
+
+.record-page-message {
+    margin: -8px 0 22px;
+}
+
+.usage-count {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    color: var(--text);
+    font-size: 0.86rem;
+}
+
+.usage-count strong {
+    color: var(--accent);
+}
+
+.record-action-disabled {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.location-context {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.record-context-label {
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
