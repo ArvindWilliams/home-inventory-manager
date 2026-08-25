@@ -3,20 +3,12 @@
 {% block title %}Assets | Home Inventory Manager{% endblock %}
 
 {% block content %}
-<div class="page-heading page-heading-row">
-    <div>
-        <h1>Household Inventory</h1>
-        <p>Search, review and manage household assets and their current state.</p>
-    </div>
-
-    {% if user.role == "Administrator" %}
-    <a class="button button-secondary" href="{{ url_for('export_inventory_csv') }}">
-        Export CSV
-    </a>
-    {% endif %}
+<div class="page-heading">
+    <h1>Household Inventory</h1>
+    <p>Search, review and manage household assets and their current state.</p>
 </div>
 
-<section class="panel">
+<section class="panel compact-panel">
     <div class="panel-heading">
         <div>
             <h2>Find assets</h2>
@@ -35,7 +27,7 @@
             <select id="filter_category" name="category_id" onchange="this.form.submit()">
                 <option value="">All categories</option>
                 {% for category in categories %}
-                <option value="{{ category.id }}" {% if selected_category_id==category.id|string %}selected{% endif %}>
+                <option value="{{ category.id }}" {% if selected_category_id == category.id|string %}selected{% endif %}>
                     {{ category.name }}
                 </option>
                 {% endfor %}
@@ -47,7 +39,7 @@
             <select id="filter_location" name="location_id" onchange="this.form.submit()">
                 <option value="">All locations</option>
                 {% for location in locations %}
-                <option value="{{ location.id }}" {% if selected_location_id==location.id|string %}selected{% endif %}>
+                <option value="{{ location.id }}" {% if selected_location_id == location.id|string %}selected{% endif %}>
                     {{ location.name }}
                 </option>
                 {% endfor %}
@@ -59,7 +51,7 @@
             <select id="filter_status" name="status" onchange="this.form.submit()">
                 <option value="">All statuses</option>
                 {% for status_option in asset_statuses %}
-                <option value="{{ status_option }}" {% if selected_status==status_option %}selected{% endif %}>
+                <option value="{{ status_option }}" {% if selected_status == status_option %}selected{% endif %}>
                     {{ status_option }}
                 </option>
                 {% endfor %}
@@ -73,289 +65,297 @@
     </form>
 </section>
 
-<div class="section-header">
-    <div>
-        <h2>Asset records</h2>
-        <p>{{ assets|length }} asset{% if assets|length != 1 %}s{% endif %} shown</p>
+<section class="panel">
+    <div class="panel-heading inventory-toolbar">
+        <div>
+            <h2>Asset records</h2>
+            <p>{{ assets|length }} asset{% if assets|length != 1 %}s{% endif %} shown.</p>
+        </div>
+
+        <div class="toolbar-actions">
+            {% if user.role == "Administrator" %}
+            <a class="button button-secondary" href="{{ url_for('export_inventory_csv') }}">Export CSV</a>
+            {% endif %}
+
+            <button class="button button-primary" type="button"
+                onclick="document.getElementById('asset-add-panel').toggleAttribute('open')">
+                Add asset
+            </button>
+        </div>
     </div>
-</div>
 
-{% if not assets %}
-<div class="empty-state">
-    <h2>No matching assets</h2>
-    <p>No assets match the current search and filter selections.</p>
-    <a class="button button-secondary" href="{{ url_for('assets') }}">Clear filters</a>
-</div>
-{% endif %}
+    {% if assets %}
+    <div class="record-table">
+        <div class="record-table-header asset-record-grid">
+            <span>Asset</span>
+            <span>Category</span>
+            <span>Location</span>
+            <span>Status</span>
+            <span>Go-Bag</span>
+            <span>Insurance</span>
+            <span>Actions</span>
+        </div>
 
-<div class="asset-list">
-    {% for asset in assets %}
-    <article class="asset-card">
-        <div class="asset-card-header">
-            <div>
-                <h2>{{ asset.name }}</h2>
-                <div class="asset-meta">
-                    <span>{{ asset.category.name }}</span>
-                    <span>{{ asset.location.name }}</span>
+        {% for asset in assets %}
+        <article class="record-row">
+            <div class="record-row-main asset-record-grid">
+                <div class="record-primary">
+                    <strong>{{ asset.name }}</strong>
+                    <small>{{ asset.description or "No description" }}</small>
+                </div>
+
+                <div>{{ asset.category.name }}</div>
+                <div class="location-context">
+                    {% if asset.status == "Missing" %}
+                    <span class="record-context-label">Last known</span>
+                    {% elif asset.status == "Lent" %}
+                    <span class="record-context-label">Home location</span>
+                    {% elif asset.status == "Disposed" %}
+                    <span class="record-context-label">Last recorded</span>
+                    {% else %}
+                    <span class="record-context-label">Current</span>
+                    {% endif %}
+                    <span>{{ asset.location.name if asset.location else "Not assigned" }}</span>
+                </div>
+
+                <div>
+                    <span class="status-badge status-{{ asset.status|lower }}">{{ asset.status }}</span>
+                </div>
+
+                <div>
+                    {% if asset.go_bag_item %}
+                    <span class="priority-badge priority-{{ asset.go_bag_item.priority|lower }}">
+                        {{ asset.go_bag_item.priority }}
+                    </span>
+                    {% else %}
+                    <span class="record-note">Not included</span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {% if asset.insurance_record %}
+                        {% if asset.insurance_record.claim_ready %}
+                        <span class="status-badge status-active">Claim ready</span>
+                        {% else %}
+                        <span class="status-badge status-missing">Needs review</span>
+                        {% endif %}
+                    {% else %}
+                    <span class="record-note">No record</span>
+                    {% endif %}
+                </div>
+
+                <div class="record-actions">
+                    <button class="record-edit-toggle" type="button"
+                        onclick="document.getElementById('asset-manage-{{ asset.id }}').toggleAttribute('open')">
+                        Manage
+                    </button>
                 </div>
             </div>
 
-            <span class="status-badge status-{{ asset.status|lower }}">
-                {{ asset.status }}
-            </span>
-        </div>
+            <details class="record-inline-editor asset-inline-editor" id="asset-manage-{{ asset.id }}">
+                <summary>Manage {{ asset.name }}</summary>
 
-        {% if asset.description %}
-        <p class="asset-description">{{ asset.description }}</p>
-        {% endif %}
-
-        <div class="record-indicators">
-            {% if asset.go_bag_item %}
-            <span class="record-indicator">
-                Go-Bag · {{ asset.go_bag_item.priority }}
-            </span>
-            {% endif %}
-
-            {% if asset.insurance_record %}
-            {% if asset.insurance_record.claim_ready %}
-            <span class="record-indicator record-positive">Claim ready</span>
-            {% else %}
-            <span class="record-indicator">Insurance recorded</span>
-            {% endif %}
-            {% endif %}
-
-            {% if asset.status == "Lent" %}
-            {% set loan = active_loans.get(asset.id) %}
-            {% if loan %}
-            <span class="record-indicator">
-                Lent to {{ loan.borrower_name }}
-            </span>
-            {% endif %}
-            {% endif %}
-        </div>
-
-        <details class="asset-actions">
-            <summary>Manage asset, status & actions</summary>
-
-            <div class="action-section">
-                <h3>Asset details</h3>
-
-                <form class="form-grid" method="POST" action="{{ url_for('update_asset', asset_id=asset.id) }}">
-
-                    <div class="field">
-                        <label for="name_{{ asset.id }}">Name</label>
-                        <input id="name_{{ asset.id }}" type="text" name="name" value="{{ asset.name }}" required>
+                <div class="inline-editor-heading">
+                    <div>
+                        <strong>Manage {{ asset.name }}</strong>
+                        <span>Update the record or complete an asset workflow.</span>
                     </div>
+                    <button class="record-edit-toggle" type="button"
+                        onclick="document.getElementById('asset-manage-{{ asset.id }}').removeAttribute('open')">
+                        Close
+                    </button>
+                </div>
 
-                    <div class="field field-wide">
-                        <label for="description_{{ asset.id }}">Description</label>
-                        <input id="description_{{ asset.id }}" type="text" name="description"
-                            value="{{ asset.description or '' }}">
-                    </div>
-
-                    <div class="field">
-                        <label for="category_{{ asset.id }}">Category</label>
-                        <select id="category_{{ asset.id }}" name="category_id" required>
-                            {% for category in categories %}
-                            <option value="{{ category.id }}" {% if category.id==asset.category_id %}selected{% endif
-                                %}>
-                                {{ category.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="field">
-                        <label for="location_{{ asset.id }}">Location</label>
-                        <select id="location_{{ asset.id }}" name="location_id" required>
-                            {% for location in locations %}
-                            <option value="{{ location.id }}" {% if location.id==asset.location_id %}selected{% endif
-                                %}>
-                                {{ location.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="form-actions">
-                        <button class="button button-primary" type="submit">
-                            Save details
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="action-section">
-                <h3>Location & lifecycle</h3>
-
-                <div class="action-row">
-                    <form class="compact-form" method="POST" action="{{ url_for('move_asset', asset_id=asset.id) }}">
+                <div class="action-section first-action-section">
+                    <h3>Asset details</h3>
+                    <form class="form-grid" method="POST" action="{{ url_for('update_asset', asset_id=asset.id) }}">
+                        <div class="field">
+                            <label for="name_{{ asset.id }}">Name</label>
+                            <input id="name_{{ asset.id }}" type="text" name="name" value="{{ asset.name }}" required>
+                        </div>
 
                         <div class="field">
-                            <label for="move_location_{{ asset.id }}">Move asset to</label>
-                            <select id="move_location_{{ asset.id }}" name="location_id" required>
+                            <label for="description_{{ asset.id }}">Description</label>
+                            <input id="description_{{ asset.id }}" type="text" name="description" value="{{ asset.description or '' }}">
+                        </div>
+
+                        <div class="field">
+                            <label for="category_{{ asset.id }}">Category</label>
+                            <select id="category_{{ asset.id }}" name="category_id" required>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if category.id == asset.category_id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="location_{{ asset.id }}">
+                                {% if asset.status == "Missing" %}Last known location
+                                {% elif asset.status == "Lent" %}Home location
+                                {% elif asset.status == "Disposed" %}Last recorded location
+                                {% else %}Current location
+                                {% endif %}
+                            </label>
+                            <select id="location_{{ asset.id }}" name="location_id" required>
                                 {% for location in locations %}
-                                <option value="{{ location.id }}" {% if location.id==asset.location_id %}selected{%
-                                    endif %}>
+                                <option value="{{ location.id }}" {% if location.id == asset.location_id %}selected{% endif %}>
                                     {{ location.name }}
                                 </option>
                                 {% endfor %}
                             </select>
                         </div>
 
-                        <button class="button button-secondary" type="submit">Move</button>
+                        <div class="form-actions">
+                            <button class="button button-primary" type="submit">Save details</button>
+                            <button class="button button-secondary" type="button" onclick="this.form.reset()">Reset</button>
+                        </div>
                     </form>
+                </div>
 
+                <div class="action-section">
+                    <h3>Location & lifecycle</h3>
+                    <div class="action-row">
+                        <form class="compact-form" method="POST" action="{{ url_for('move_asset', asset_id=asset.id) }}">
+                            <div class="field">
+                                <label for="move_location_{{ asset.id }}">Move asset to</label>
+                                <select id="move_location_{{ asset.id }}" name="location_id" required>
+                                    {% for location in locations %}
+                                    <option value="{{ location.id }}" {% if location.id == asset.location_id %}selected{% endif %}>
+                                        {{ location.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button class="button button-secondary" type="submit">Move</button>
+                        </form>
+
+                        {% if asset.status == "Active" %}
+                        <form class="compact-form" method="POST" action="{{ url_for('update_asset_status', asset_id=asset.id) }}">
+                            <div class="field">
+                                <label for="status_{{ asset.id }}">Change status</label>
+                                <select id="status_{{ asset.id }}" name="status" required>
+                                    <option value="Missing">Missing</option>
+                                    <option value="Disposed">Disposed</option>
+                                </select>
+                            </div>
+                            <button class="button button-secondary" type="submit">Update status</button>
+                        </form>
+                        {% elif asset.status == "Missing" %}
+                        <form class="compact-form" method="POST" action="{{ url_for('update_asset_status', asset_id=asset.id) }}">
+                            <div class="field">
+                                <label for="status_{{ asset.id }}">Change status</label>
+                                <select id="status_{{ asset.id }}" name="status" required>
+                                    <option value="Active">Active</option>
+                                    <option value="Disposed">Disposed</option>
+                                </select>
+                            </div>
+                            <button class="button button-secondary" type="submit">Update status</button>
+                        </form>
+                        {% elif asset.status == "Lent" %}
+                        <p class="muted-note">Lent status is controlled by the lending and return workflow.</p>
+                        {% else %}
+                        <p class="muted-note">Disposed assets have no further lifecycle transitions.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="action-section">
+                    <h3>Lending</h3>
                     {% if asset.status == "Active" %}
-                    <form class="compact-form" method="POST"
-                        action="{{ url_for('update_asset_status', asset_id=asset.id) }}">
-
+                    <form class="form-grid" method="POST" action="{{ url_for('lend_asset', asset_id=asset.id) }}">
                         <div class="field">
-                            <label for="status_{{ asset.id }}">Change status</label>
-                            <select id="status_{{ asset.id }}" name="status" required>
-                                <option value="Missing">Missing</option>
-                                <option value="Disposed">Disposed</option>
-                            </select>
+                            <label for="borrower_{{ asset.id }}">Borrower</label>
+                            <input id="borrower_{{ asset.id }}" type="text" name="borrower_name" placeholder="Borrower name" required>
                         </div>
-
-                        <button class="button button-secondary" type="submit">
-                            Update status
-                        </button>
-                    </form>
-
-                    {% elif asset.status == "Missing" %}
-                    <form class="compact-form" method="POST"
-                        action="{{ url_for('update_asset_status', asset_id=asset.id) }}">
-
                         <div class="field">
-                            <label for="status_{{ asset.id }}">Change status</label>
-                            <select id="status_{{ asset.id }}" name="status" required>
-                                <option value="Active">Active</option>
-                                <option value="Disposed">Disposed</option>
-                            </select>
+                            <label for="due_date_{{ asset.id }}">Expected return date</label>
+                            <input id="due_date_{{ asset.id }}" type="date" name="due_date">
                         </div>
-
-                        <button class="button button-secondary" type="submit">
-                            Update status
-                        </button>
+                        <div class="form-actions">
+                            <button class="button button-secondary" type="submit">Lend asset</button>
+                        </div>
                     </form>
-
-                    {% elif asset.status == "Disposed" %}
-                    <p class="muted-note">Disposed assets have no further lifecycle transitions.</p>
+                    {% elif asset.status == "Lent" %}
+                        {% set loan = active_loans.get(asset.id) %}
+                        {% if loan %}
+                        <div class="current-loan">
+                            <p>
+                                Lent to <strong>{{ loan.borrower_name }}</strong> on {{ loan.lent_date }}.
+                                {% if loan.due_date %}Expected back {{ loan.due_date }}.{% endif %}
+                            </p>
+                            <form method="POST" action="{{ url_for('return_asset', loan_id=loan.id) }}">
+                                <button class="button button-primary" type="submit">Record return</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <p class="muted-note">No active loan record was found.</p>
+                        {% endif %}
+                    {% else %}
+                    <p class="muted-note">This asset is not currently available for lending.</p>
                     {% endif %}
                 </div>
-            </div>
 
-            <div class="action-section">
-                <h3>Lending</h3>
-
-                {% if asset.status == "Active" %}
-                <form class="form-grid" method="POST" action="{{ url_for('lend_asset', asset_id=asset.id) }}">
-
-                    <div class="field">
-                        <label for="borrower_{{ asset.id }}">Borrower</label>
-                        <input id="borrower_{{ asset.id }}" type="text" name="borrower_name" placeholder="Borrower name"
-                            required>
+                <div class="action-section">
+                    <h3>Emergency Go-Bag</h3>
+                    {% if asset.go_bag_item %}
+                    <div class="action-row action-row-between">
+                        <p class="muted-note">
+                            Included with <strong>{{ asset.go_bag_item.priority }}</strong> priority.
+                        </p>
+                        <a class="button button-secondary" href="{{ url_for('go_bag') }}">Manage Go-Bag entry</a>
                     </div>
-
-                    <div class="field">
-                        <label for="due_date_{{ asset.id }}">Expected return date</label>
-                        <input id="due_date_{{ asset.id }}" type="date" name="due_date">
-                    </div>
-
-                    <div class="form-actions">
-                        <button class="button button-secondary" type="submit">
-                            Lend asset
-                        </button>
-                    </div>
-                </form>
-
-                {% elif asset.status == "Lent" %}
-                {% set loan = active_loans.get(asset.id) %}
-                {% if loan %}
-                <div class="current-loan">
-                    <p>
-                        Lent to <strong>{{ loan.borrower_name }}</strong>
-                        on {{ loan.lent_date }}.
-                        {% if loan.due_date %}
-                        Expected back {{ loan.due_date }}.
-                        {% endif %}
-                    </p>
-
-                    <form method="POST" action="{{ url_for('return_asset', loan_id=loan.id) }}">
-                        <button class="button button-primary" type="submit">
-                            Record return
-                        </button>
+                    {% else %}
+                    <form class="form-grid" method="POST" action="{{ url_for('add_to_go_bag', asset_id=asset.id) }}">
+                        <div class="field">
+                            <label for="gobag_priority_{{ asset.id }}">Priority</label>
+                            <select id="gobag_priority_{{ asset.id }}" name="priority">
+                                <option value="High">High</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="gobag_notes_{{ asset.id }}">Preparation / retrieval note</label>
+                            <input id="gobag_notes_{{ asset.id }}" type="text" name="notes" placeholder="Optional preparation or retrieval note">
+                        </div>
+                        <div class="form-actions">
+                            <button class="button button-secondary" type="submit">Add to Go-Bag</button>
+                        </div>
                     </form>
+                    {% endif %}
                 </div>
-                {% else %}
-                <p class="muted-note">No active loan record was found.</p>
-                {% endif %}
 
-                {% else %}
-                <p class="muted-note">This asset is not currently available for lending.</p>
-                {% endif %}
-            </div>
-
-            <div class="action-section">
-                <h3>Emergency Go-Bag</h3>
-
-                {% if asset.go_bag_item %}
-                <p class="muted-note">
-                    Included in the Emergency Go-Bag with
-                    <strong>{{ asset.go_bag_item.priority }}</strong> priority.
-                </p>
-                <a class="text-link" href="{{ url_for('go_bag') }}">
-                    Manage Go-Bag entry
-                </a>
-
-                {% else %}
-                <form class="form-grid" method="POST" action="{{ url_for('add_to_go_bag', asset_id=asset.id) }}">
-
-                    <div class="field">
-                        <label for="gobag_priority_{{ asset.id }}">Priority</label>
-                        <select id="gobag_priority_{{ asset.id }}" name="priority">
-                            <option value="High">High</option>
-                            <option value="Medium" selected>Medium</option>
-                            <option value="Low">Low</option>
-                        </select>
+                <div class="action-section danger-zone">
+                    <h3>Remove asset</h3>
+                    <div class="action-row action-row-between">
+                        <p>Delete this asset and its associated HIM records from the household inventory.</p>
+                        <form method="POST" action="{{ url_for('delete_asset', asset_id=asset.id) }}"
+                            onsubmit="return confirm('Delete this asset from the household inventory?');">
+                            <button class="button button-danger" type="submit">Delete asset</button>
+                        </form>
                     </div>
+                </div>
+            </details>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>No matching assets</h2>
+        <p>No assets match the current search and filter selections.</p>
+        <a class="button button-secondary" href="{{ url_for('assets') }}">Clear filters</a>
+    </div>
+    {% endif %}
+</section>
 
-                    <div class="field field-wide">
-                        <label for="gobag_notes_{{ asset.id }}">Preparation note</label>
-                        <input id="gobag_notes_{{ asset.id }}" type="text" name="notes"
-                            placeholder="Optional retrieval or preparation note">
-                    </div>
-
-                    <div class="form-actions">
-                        <button class="button button-secondary" type="submit">
-                            Add to Go-Bag
-                        </button>
-                    </div>
-                </form>
-                {% endif %}
-            </div>
-
-            <div class="action-section danger-zone">
-                <h3>Remove asset</h3>
-                <p>Delete this asset from the household inventory.</p>
-
-                <form method="POST" action="{{ url_for('delete_asset', asset_id=asset.id) }}">
-                    <button class="button button-danger" type="submit">
-                        Delete asset
-                    </button>
-                </form>
-            </div>
-        </details>
-    </article>
-    {% endfor %}
-</div>
-
-<section class="panel add-asset-panel">
-    <div class="panel-heading">
+<details class="panel add-record-panel" id="asset-add-panel">
+    <summary>Add asset</summary>
+    <div class="panel-heading add-record-heading">
         <div>
             <h2>Add household asset</h2>
-            <p>Create a new asset record and assign its category and current location.</p>
+            <p>Create a new inventory record and assign its category and current location.</p>
         </div>
     </div>
 
@@ -364,12 +364,10 @@
             <label for="name">Asset name</label>
             <input type="text" id="name" name="name" required>
         </div>
-
-        <div class="field field-wide">
+        <div class="field">
             <label for="description">Description</label>
             <input type="text" id="description" name="description">
         </div>
-
         <div class="field">
             <label for="category_id">Category</label>
             <select id="category_id" name="category_id" required>
@@ -378,7 +376,6 @@
                 {% endfor %}
             </select>
         </div>
-
         <div class="field">
             <label for="location_id">Location</label>
             <select id="location_id" name="location_id" required>
@@ -387,10 +384,10 @@
                 {% endfor %}
             </select>
         </div>
-
         <div class="form-actions">
             <button class="button button-primary" type="submit">Add asset</button>
+            <button class="button button-secondary" type="button" onclick="this.form.reset(); document.getElementById('asset-add-panel').removeAttribute('open');">Cancel</button>
         </div>
     </form>
-</section>
+</details>
 {% endblock %}

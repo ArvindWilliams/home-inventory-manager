@@ -1,47 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Categories | Home Inventory Manager</title>
-</head>
+{% block title %}Categories | Home Inventory Manager{% endblock %}
 
-<body>
-
+{% block content %}
+<div class="page-heading">
     <h1>Categories</h1>
+    <p>Organise household assets into meaningful inventory groups.</p>
+</div>
 
+{% if error %}
+<div class="form-message form-message-error record-page-message">
+    {{ error }}
+</div>
+{% endif %}
 
+<section class="panel">
+    <div class="panel-heading admin-record-toolbar">
+        <div>
+            <h2>Category records</h2>
+            <p>{{ categories|length }} categor{% if categories|length == 1 %}y{% else %}ies{% endif %} available.</p>
+        </div>
+        {% if user.role == "Administrator" %}
+        <button class="button button-primary" type="button"
+            onclick="document.getElementById('category-add-panel').toggleAttribute('open')">Add category</button>
+        {% endif %}
+    </div>
 
-    <ul>
+    {% if categories %}
+    <div class="record-table">
+        <div class="record-table-header admin-record-grid">
+            <span>Category</span>
+            <span>Assets</span>
+            <span>Actions</span>
+        </div>
+
         {% for category in categories %}
-        <li>
-            {{ category.name }}
+        {% set asset_count = category_asset_counts.get(category.id, 0) %}
+        <article class="record-row">
+            <div class="record-row-main admin-record-grid">
+                <div class="record-primary"><strong>{{ category.name }}</strong></div>
+                <div>
+                    {% if asset_count %}
+                    <span class="usage-count"><strong>{{ asset_count }}</strong> asset{% if asset_count != 1 %}s{% endif %}</span>
+                    {% else %}
+                    <span class="record-note">Unused</span>
+                    {% endif %}
+                </div>
+                <div class="record-actions">
+                    {% if user.role == "Administrator" %}
+                    <button class="record-edit-toggle" type="button"
+                        onclick="document.getElementById('category-edit-{{ category.id }}').toggleAttribute('open')">Edit</button>
+                    {% if asset_count == 0 %}
+                    <form method="POST" action="{{ url_for('delete_category', category_id=category.id) }}"
+                        onsubmit="return confirm('Delete this unused category?');">
+                        <button class="record-remove" type="submit">Delete</button>
+                    </form>
+                    {% else %}
+                    <span class="record-action-disabled" title="Reassign assets before deleting this category">In use</span>
+                    {% endif %}
+                    {% else %}
+                    <span class="record-note">View only</span>
+                    {% endif %}
+                </div>
+            </div>
 
             {% if user.role == "Administrator" %}
-            <form method="POST" action="{{ url_for('update_category', category_id=category.id) }}"
-                style="display:inline;">
-                <input type="text" name="name" value="{{ category.name }}" required>
-                <button type="submit">Update</button>
-            </form>
-
-            <form method="POST" action="{{ url_for('delete_category', category_id=category.id) }}"
-                style="display:inline;">
-                <button type="submit">Delete</button>
-            </form>
+            <details class="record-inline-editor" id="category-edit-{{ category.id }}">
+                <summary>Edit {{ category.name }}</summary>
+                <form class="inline-single-form" method="POST" action="{{ url_for('update_category', category_id=category.id) }}">
+                    <div class="field">
+                        <label for="category_name_{{ category.id }}">Category name</label>
+                        <input type="text" id="category_name_{{ category.id }}" name="name" value="{{ category.name }}" required>
+                    </div>
+                    <div class="form-actions">
+                        <button class="button button-primary" type="submit">Save changes</button>
+                        <button class="button button-secondary" type="button"
+                            onclick="this.form.reset(); document.getElementById('category-edit-{{ category.id }}').removeAttribute('open');">Cancel</button>
+                    </div>
+                </form>
+            </details>
             {% endif %}
-
-        </li>
+        </article>
         {% endfor %}
-    </ul>
-
-    {% if user.role == "Administrator" %}
-    <form method="POST" action="{{ url_for('add_category') }}">
-        <label for="name">New category</label>
-        <input type="text" id="name" name="name" required>
-        <button type="submit">Add Category</button>
-    </form>
+    </div>
+    {% else %}
+    <div class="empty-state"><h2>No categories</h2><p>Add a category before classifying household assets.</p></div>
     {% endif %}
+</section>
 
-</body>
-
-</html>
+{% if user.role == "Administrator" %}
+<details class="panel add-record-panel" id="category-add-panel">
+    <summary>Add category</summary>
+    <div class="panel-heading add-record-heading">
+        <div><h2>Add category</h2><p>Create a new inventory classification.</p></div>
+    </div>
+    <form class="inline-single-form" method="POST" action="{{ url_for('add_category') }}">
+        <div class="field">
+            <label for="category_name">Category name</label>
+            <input type="text" id="category_name" name="name" required>
+        </div>
+        <div class="form-actions">
+            <button class="button button-primary" type="submit">Add category</button>
+            <button class="button button-secondary" type="button"
+                onclick="this.form.reset(); document.getElementById('category-add-panel').removeAttribute('open');">Cancel</button>
+        </div>
+    </form>
+</details>
+{% endif %}
+{% endblock %}

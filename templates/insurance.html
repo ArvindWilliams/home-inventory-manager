@@ -7,7 +7,11 @@
     <h1>Insurance & Claim Readiness</h1>
     <p>Maintain insurance evidence for household assets and identify records ready to support a claim.</p>
 </div>
-
+{% if error %}
+<div class="form-message form-message-error record-page-message" role="alert">
+    {{ error }}
+</div>
+{% endif %}
 <div class="summary-strip">
     <div class="summary-strip-item">
         <strong>{{ insured_assets|length }}</strong>
@@ -33,11 +37,8 @@
         </div>
 
         {% if uninsured_assets %}
-        <button
-            class="button button-primary"
-            type="button"
-            onclick="document.getElementById('insurance-add-panel').toggleAttribute('open')"
-        >
+        <button class="button button-primary" type="button"
+            onclick="document.getElementById('insurance-add-panel').toggleAttribute('open')">
             Add insurance record
         </button>
         {% endif %}
@@ -90,19 +91,13 @@
                 </div>
 
                 <div class="record-actions">
-                    <button
-                        class="record-edit-toggle"
-                        type="button"
-                        onclick="document.getElementById('insurance-edit-{{ asset.id }}').toggleAttribute('open')"
-                    >
+                    <button class="record-edit-toggle" type="button"
+                        onclick="document.getElementById('insurance-edit-{{ asset.id }}').toggleAttribute('open')">
                         Edit
                     </button>
 
-                    <form
-                        method="POST"
-                        action="{{ url_for('delete_insurance_record', asset_id=asset.id) }}"
-                        onsubmit="return confirm('Remove this insurance record? The asset will remain in the inventory.');"
-                    >
+                    <form method="POST" action="{{ url_for('delete_insurance_record', asset_id=asset.id) }}"
+                        onsubmit="return confirm('Remove this insurance record? The asset will remain in the inventory.');">
                         <button class="record-remove" type="submit">
                             Remove
                         </button>
@@ -113,63 +108,36 @@
             <details class="record-inline-editor" id="insurance-edit-{{ asset.id }}">
                 <summary>Edit {{ asset.name }}</summary>
 
-                <form
-                    class="form-grid"
-                    method="POST"
-                    action="{{ url_for('save_insurance_record', asset_id=asset.id) }}"
-                >
+                <form class="form-grid" method="POST"
+                    action="{{ url_for('save_insurance_record', asset_id=asset.id) }}">
                     <div class="field">
                         <label for="provider_{{ asset.id }}">Insurance provider</label>
-                        <input
-                            type="text"
-                            id="provider_{{ asset.id }}"
-                            name="provider"
-                            value="{{ insurance.provider or '' }}"
-                            placeholder="Provider name"
-                        >
+                        <input type="text" id="provider_{{ asset.id }}" name="provider"
+                            value="{{ insurance.provider or '' }}" placeholder="Provider name">
                     </div>
 
                     <div class="field">
                         <label for="policy_number_{{ asset.id }}">Policy / reference</label>
-                        <input
-                            type="text"
-                            id="policy_number_{{ asset.id }}"
-                            name="policy_number"
-                            value="{{ insurance.policy_number or '' }}"
-                            placeholder="Policy or reference number"
-                        >
+                        <input type="text" id="policy_number_{{ asset.id }}" name="policy_number"
+                            value="{{ insurance.policy_number or '' }}" placeholder="Policy or reference number">
                     </div>
 
                     <div class="field">
                         <label for="insured_value_{{ asset.id }}">Insured value</label>
-                        <input
-                            type="number"
-                            id="insured_value_{{ asset.id }}"
-                            name="insured_value"
-                            min="0"
-                            step="0.01"
+                        <input type="number" id="insured_value_{{ asset.id }}" name="insured_value" min="0" step="0.01"
                             value="{{ insurance.insured_value if insurance.insured_value is not none else '' }}"
-                            placeholder="0.00"
-                        >
+                            placeholder="0.00">
                     </div>
 
                     <div class="field">
                         <label for="evidence_reference_{{ asset.id }}">Evidence reference</label>
-                        <input
-                            type="text"
-                            id="evidence_reference_{{ asset.id }}"
-                            name="evidence_reference"
+                        <input type="text" id="evidence_reference_{{ asset.id }}" name="evidence_reference"
                             value="{{ insurance.evidence_reference or '' }}"
-                            placeholder="Receipt, valuation or storage note"
-                        >
+                            placeholder="Receipt, valuation or storage note">
                     </div>
 
                     <label class="check-field">
-                        <input
-                            type="checkbox"
-                            name="claim_ready"
-                            {% if insurance.claim_ready %}checked{% endif %}
-                        >
+                        <input type="checkbox" name="claim_ready" {% if insurance.claim_ready %}checked{% endif %}>
                         <span>
                             <strong>Claim ready</strong>
                             <small>Insurance information and evidence have been reviewed.</small>
@@ -181,14 +149,10 @@
                             Save changes
                         </button>
 
-                        <button
-                            class="button button-secondary"
-                            type="button"
-                            onclick="
+                        <button class="button button-secondary" type="button" onclick="
                                 this.form.reset();
                                 document.getElementById('insurance-edit-{{ asset.id }}').removeAttribute('open');
-                            "
-                        >
+                            ">
                             Cancel
                         </button>
                     </div>
@@ -227,51 +191,28 @@
                 </span>
             </summary>
 
-            <form
-                class="form-grid"
-                method="POST"
-                action="{{ url_for('save_insurance_record', asset_id=asset.id) }}"
-            >
+            <form class="form-grid" method="POST" action="{{ url_for('save_insurance_record', asset_id=asset.id) }}">
                 <div class="field">
                     <label for="new_provider_{{ asset.id }}">Insurance provider</label>
-                    <input
-                        type="text"
-                        id="new_provider_{{ asset.id }}"
-                        name="provider"
-                        placeholder="Provider name"
-                    >
+                    <input type="text" id="new_provider_{{ asset.id }}" name="provider" placeholder="Provider name">
                 </div>
 
                 <div class="field">
                     <label for="new_policy_{{ asset.id }}">Policy / reference</label>
-                    <input
-                        type="text"
-                        id="new_policy_{{ asset.id }}"
-                        name="policy_number"
-                        placeholder="Policy or reference number"
-                    >
+                    <input type="text" id="new_policy_{{ asset.id }}" name="policy_number"
+                        placeholder="Policy or reference number">
                 </div>
 
                 <div class="field">
                     <label for="new_value_{{ asset.id }}">Insured value</label>
-                    <input
-                        type="number"
-                        id="new_value_{{ asset.id }}"
-                        name="insured_value"
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                    >
+                    <input type="number" id="new_value_{{ asset.id }}" name="insured_value" min="0" step="0.01"
+                        placeholder="0.00">
                 </div>
 
                 <div class="field">
                     <label for="new_evidence_{{ asset.id }}">Evidence reference</label>
-                    <input
-                        type="text"
-                        id="new_evidence_{{ asset.id }}"
-                        name="evidence_reference"
-                        placeholder="Receipt, valuation or storage note"
-                    >
+                    <input type="text" id="new_evidence_{{ asset.id }}" name="evidence_reference"
+                        placeholder="Receipt, valuation or storage note">
                 </div>
 
                 <label class="check-field">
@@ -287,14 +228,10 @@
                         Create record
                     </button>
 
-                    <button
-                        class="button button-secondary"
-                        type="button"
-                        onclick="
+                    <button class="button button-secondary" type="button" onclick="
                             this.form.reset();
                             document.getElementById('insurance-create-{{ asset.id }}').removeAttribute('open');
-                        "
-                    >
+                        ">
                         Cancel
                     </button>
                 </div>

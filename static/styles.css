@@ -776,9 +776,8 @@ a {
     max-width: 760px;
 }
 
-.gobag-panel {
-    border-top: 3px solid #9a6d2c;
-}
+
+
 
 .gobag-list {
     display: grid;
@@ -1163,4 +1162,271 @@ a {
 
 .insurance-add-panel:not([open]) {
     display: none;
+}
+
+/* ---------- Shared record workspace refinements ---------- */
+
+.compact-panel {
+    padding-bottom: 20px;
+}
+
+.inventory-toolbar,
+.lending-toolbar,
+.admin-record-toolbar {
+    align-items: flex-end;
+}
+
+.asset-record-grid {
+    grid-template-columns:
+        minmax(155px, 1.45fr) minmax(105px, 0.9fr) minmax(105px, 0.9fr) 92px 90px 105px 75px;
+}
+
+.loan-record-grid {
+    grid-template-columns:
+        minmax(150px, 1.3fr) minmax(130px, 1fr) 105px 120px minmax(145px, 1.2fr) 75px;
+}
+
+.admin-record-grid {
+    grid-template-columns: minmax(180px, 1.2fr) minmax(180px, 2fr) 120px;
+}
+
+.record-row-main>div:not(.record-primary):not(.record-actions) {
+    font-size: 0.86rem;
+}
+
+.asset-inline-editor {
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+.inline-editor-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 4px;
+}
+
+.inline-editor-heading>div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.inline-editor-heading span {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.first-action-section {
+    padding-top: 16px;
+}
+
+.action-row-between {
+    justify-content: space-between;
+    width: 100%;
+}
+
+.action-row-between p {
+    margin: 0;
+}
+
+.add-record-panel>summary {
+    display: none;
+}
+
+.add-record-panel:not([open]) {
+    display: none;
+}
+
+.add-record-heading {
+    margin-bottom: 18px;
+}
+
+.inline-single-form {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    align-items: end;
+    gap: 14px;
+    max-width: 620px;
+}
+
+/* ---------- Login ---------- */
+
+.login-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+    gap: 56px;
+    align-items: center;
+    min-height: 560px;
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.login-intro {
+    max-width: 560px;
+}
+
+.login-kicker {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.login-intro h1 {
+    margin: 0 0 14px;
+    max-width: 520px;
+    font-size: 2.35rem;
+    line-height: 1.15;
+}
+
+.login-intro>p {
+    margin: 0;
+    max-width: 520px;
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+.login-feature-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.login-feature-list span {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.login-panel {
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.login-panel-heading {
+    margin-bottom: 22px;
+}
+
+.login-panel-heading h2 {
+    margin: 0 0 4px;
+    font-size: 1.3rem;
+}
+
+.login-panel-heading p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.login-form {
+    display: grid;
+    gap: 16px;
+}
+
+.login-button {
+    width: 100%;
+    margin-top: 2px;
+}
+
+.form-message {
+    margin-bottom: 18px;
+    padding: 11px 12px;
+    border-radius: 7px;
+    font-size: 0.84rem;
+}
+
+.form-message-error {
+    border: 1px solid #e4bcbc;
+    background: #faeeee;
+    color: var(--danger);
+}
+
+@media (max-width: 1000px) {
+
+    .asset-record-grid,
+    .loan-record-grid,
+    .admin-record-grid {
+        grid-template-columns: 1fr;
+        gap: 7px;
+    }
+
+    .asset-record-grid.record-table-header,
+    .loan-record-grid.record-table-header,
+    .admin-record-grid.record-table-header {
+        display: none;
+    }
+}
+
+@media (max-width: 760px) {
+    .login-shell {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        min-height: 0;
+    }
+
+    .login-intro h1 {
+        font-size: 1.9rem;
+    }
+
+    .inline-single-form {
+        grid-template-columns: 1fr;
+    }
+
+    .inventory-toolbar,
+    .lending-toolbar,
+    .admin-record-toolbar,
+    .inline-editor-heading {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ---------- Record integrity & lifecycle context ---------- */
+
+.record-page-message {
+    margin: -8px 0 22px;
+}
+
+.usage-count {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    color: var(--text);
+    font-size: 0.86rem;
+}
+
+.usage-count strong {
+    color: var(--accent);
+}
+
+.record-action-disabled {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.location-context {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.record-context-label {
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
 }

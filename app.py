@@ -45,7 +45,10 @@ def get_current_user():
 
 @app.route("/")
 def home():
-    return "Home Inventory Manager"
+    user = get_current_user()
+    if user is not None:
+        return redirect(url_for("dashboard"))
+    return redirect(url_for("login"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -61,10 +64,10 @@ def login():
             session["user_id"] = user.id
             return redirect(url_for("dashboard"))
         else:
-            return render_template("login.html")
+            return render_template("login.html", login_error=True)
 
 
-    return render_template("login.html")
+    return render_template("login.html", login_error=False)
 
 @app.route("/logout")
 def logout():
@@ -95,11 +98,26 @@ def categories():
     user = get_current_user()
     if user is None:
         return redirect(url_for("login"))
-    
+
     category_list = db.session.execute(
-    db.select(Category).order_by(Category.name)
+        db.select(Category).order_by(Category.name)
     ).scalars().all()
-    return render_template("categories.html", categories=category_list,user=user)
+
+    category_asset_counts = {category.id: 0 for category in category_list}
+    assigned_category_ids = db.session.execute(
+        db.select(Asset.category_id)
+    ).scalars().all()
+
+    for category_id in assigned_category_ids:
+        category_asset_counts[category_id] = category_asset_counts.get(category_id, 0) + 1
+
+    return render_template(
+        "categories.html",
+        categories=category_list,
+        category_asset_counts=category_asset_counts,
+        error=request.args.get("error", ""),
+        user=user
+    )
 
 @app.route("/categories/add", methods=["POST"])
 def add_category():
@@ -165,6 +183,18 @@ def delete_category(category_id):
 
     if category is None:
         abort(404)
+
+    assigned_assets = db.session.execute(
+        db.select(Asset.id).where(Asset.category_id == category.id)
+    ).scalars().all()
+
+    if assigned_assets:
+        count = len(assigned_assets)
+        noun = "asset" if count == 1 else "assets"
+        return redirect(url_for(
+            "categories",
+            error=f"Cannot delete {category.name}: {count} {noun} still use this category. Reassign them first."
+        ))
 
     db.session.delete(category)
     db.session.commit()
@@ -246,9 +276,19 @@ def locations():
         db.select(Location).order_by(Location.name)
     ).scalars().all()
 
+    location_asset_counts = {location.id: 0 for location in location_list}
+    assigned_location_ids = db.session.execute(
+        db.select(Asset.location_id)
+    ).scalars().all()
+
+    for location_id in assigned_location_ids:
+        location_asset_counts[location_id] = location_asset_counts.get(location_id, 0) + 1
+
     return render_template(
         "locations.html",
         locations=location_list,
+        location_asset_counts=location_asset_counts,
+        error=request.args.get("error", ""),
         user=user
     )
 
@@ -418,6 +458,18 @@ def delete_location(location_id):
 
     if location is None:
         abort(404)
+
+    assigned_assets = db.session.execute(
+        db.select(Asset.id).where(Asset.location_id == location.id)
+    ).scalars().all()
+
+    if assigned_assets:
+        count = len(assigned_assets)
+        noun = "asset" if count == 1 else "assets"
+        return redirect(url_for(
+            "locations",
+            error=f"Cannot delete {location.name}: {count} {noun} are still assigned here. Move them first."
+        ))
 
     db.session.delete(location)
     db.session.commit()
@@ -643,6 +695,8 @@ def insurance_records():
     if user is None:
         return redirect(url_for("login"))
 
+    error = session.pop("insurance_error", None)
+
     asset_list = db.session.execute(
         db.select(Asset).order_by(Asset.name)
     ).scalars().all()
@@ -661,7 +715,8 @@ def insurance_records():
         "insurance.html",
         insured_assets=insured_assets,
         uninsured_assets=uninsured_assets,
-        user=user
+        user=user,
+        error=error
     )
 
 
@@ -681,6 +736,9 @@ def save_insurance_record(asset_id):
     insured_value_text = request.form.get("insured_value", "").strip()
     evidence_reference = request.form.get("evidence_reference", "").strip()
     claim_ready = request.form.get("claim_ready") == "on"
+    if not any([provider, policy_number, insured_value_text, evidence_reference]):
+        session["insurance_error"] = "Enter at least one insurance detail before saving."
+        return redirect(url_for("insurance_records"))
 
     insured_value = None
     if insured_value_text:
